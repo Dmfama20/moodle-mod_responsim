@@ -40,8 +40,148 @@ function xmldb_responsim_upgrade($oldversion) {
 
     // For further information please read {@link https://docs.moodle.org/dev/Upgrade_API}.
     //
-    // You will also have to create the db/install.xml file by using the XMLDB Editor.
-    // Documentation for the XMLDB Editor can be found at {@link https://docs.moodle.org/dev/XMLDB_editor}.
+    
+    
+        if ($oldversion < 2021120700) {
+
+        // Define table responsim_questions to be created.
+        $table = new xmldb_table('responsim_questions');
+
+        // Adding fields to table responsim_questions.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('question_text', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table responsim_questions.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for responsim_questions.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Responsim savepoint reached.
+        upgrade_mod_savepoint(true, 2021120700, 'responsim');
+    }
+    
+    
+        if ($oldversion < 2021120700) {
+
+        // Define table responsim_answers to be created.
+        $table = new xmldb_table('responsim_answers');
+
+        // Adding fields to table responsim_answers.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('question', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('answer', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table responsim_answers.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for responsim_answers.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Responsim savepoint reached.
+        upgrade_mod_savepoint(true, 2021120700, 'responsim');
+    }
+
+    
+        if ($oldversion < 2021120700) {
+
+        // Define table responsim_gamesession to be created.
+        $table = new xmldb_table('responsim_gamesession');
+
+        // Adding fields to table responsim_gamesession.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('mdl_user', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('state', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, 'progress');
+
+        // Adding keys to table responsim_gamesession.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for responsim_gamesession.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Responsim savepoint reached.
+        upgrade_mod_savepoint(true, 2021120700, 'responsim');
+    }
+
+    
+        if ($oldversion < 2021120700) {
+
+        // Define table responsim_answertracking to be created.
+        $table = new xmldb_table('responsim_answertracking');
+
+        // Adding fields to table responsim_answertracking.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('gamesession', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('mdl_user', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('question', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('answer', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table responsim_answertracking.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for responsim_answertracking.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Responsim savepoint reached.
+        upgrade_mod_savepoint(true, 2021120700, 'responsim');
+    }
+
+    
+        if ($oldversion < 2021120700) {
+
+        // Define table responsim_variables to be created.
+        $table = new xmldb_table('responsim_variables');
+
+        // Adding fields to table responsim_variables.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('variable', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table responsim_variables.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for responsim_variables.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Responsim savepoint reached.
+        upgrade_mod_savepoint(true, 2021120700, 'responsim');
+    }
+
+    
+        if ($oldversion < 2021120700) {
+
+        // Define table responsim_variable_values to be created.
+        $table = new xmldb_table('responsim_variable_values');
+
+        // Adding fields to table responsim_variable_values.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('variable', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('gamesession', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('mdl_user', XMLDB_TYPE_INTEGER, '20', null, null, null, null);
+        $table->add_field('variable_value', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table responsim_variable_values.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for responsim_variable_values.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
+
+        // Responsim savepoint reached.
+        upgrade_mod_savepoint(true, 2021120700, 'responsim');
+    }
+
+
 
     return true;
 }
