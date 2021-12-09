@@ -1,8 +1,6 @@
 # Module responsim #
 
-TODO Describe the plugin shortly here.
-
-TODO Provide more detailed description here.
+This is a simulation plugin!
 
 ## Installing via uploaded ZIP file ##
 
