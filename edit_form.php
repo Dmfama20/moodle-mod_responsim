@@ -26,7 +26,7 @@ defined('MOODLE_INTERNAL') || die();
 //moodleform is defined in formslib.php
 require_once("$CFG->libdir/formslib.php");
 
-class responsim_form extends moodleform {
+class responsim_variables_form extends moodleform {
     //Add elements to form
     public function definition() {
         global $PAGE, $CFG;
@@ -41,6 +41,11 @@ class responsim_form extends moodleform {
             $mform->addElement('hidden', $name, $value);
             $mform->setType($name, PARAM_RAW);
         }
+        
+        $attr_var_name=array('size'=>'20');
+        $mform->addElement('text', 'variable-name', "Variablen-Name", $attr_var_name);
+        
+        
         $maxbytes=$CFG->maxbytes;
         $mform->addElement('static', '', '', "Bitte CSV-Datei hochladen!");
       $mform->addElement('filepicker', 'userfile', get_string('file'), null, array('maxbytes' => $maxbytes, 'accepted_types' => '*'));
@@ -48,7 +53,7 @@ class responsim_form extends moodleform {
 
 
     
-        $this->add_action_buttons($cancel = false, $submitlabel='Ändern!');
+        $this->add_action_buttons($cancel = false, $submitlabel='OK');
     
     }
     // //Custom validation should be added here

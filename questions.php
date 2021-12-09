@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * edits an instance of responsim.
+ * Prints an instance of responsim.
  *
  * @package     responsim
  * @copyright   2021 Your Name <you@example.com>
@@ -65,31 +65,8 @@ $PAGE->set_context($modulecontext);
 responsim_add_fake_blocks($PAGE,$cm);
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab='edit';
-echo $OUTPUT->header( $cm, $currenttab, false, null, "TEst");
-
-$mform = new responsim_variables_form(null, array('courseid'=>$course->id, 'url'=>$PAGE->url));
-//display the form
-$mform->display();
-
-// $mform->set_data((object)$currentparams);
-if($data = $mform->get_data()) {
-    //  redirect(new moodle_url('/local/dexpmod/index.php', $currentparams));
-
-    $content = $mform->get_file_content('userfile');
-    
-   echo var_dump($content);    
-
-}
-
-else {
-
-   
-    
-}
-
-echo "Something TODO: EDit";
-
+$currenttab = 'questions';
+echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
 
 
