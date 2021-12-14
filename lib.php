@@ -317,14 +317,121 @@ function responsim_add_fake_blocks($page, $cm) {
  * @return block_contents
  **/
 function responsim_block_contents($cmid) {
+ global $DB;
 
+   
+        
+   $records_vars = $DB->get_records('responsim_variables');
+   
+$content="";
+foreach ($records_vars as $var) {
+
+
+
+$record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
+ $content .=$var->variable."= "."27";
+  $content .= "<br>" ;
+ 
+    
+    }
+ 
     $bc = new block_contents();
     $bc->title = "Overview block";
-    $content = "Variable 1= ....";
     $bc->content = $content;
     
 
     return $bc;
 }
+
+
+
+
+/**
+ * Saves a new instance of the philosophers quiz into the database
+ *
+ * Given an object containing all the necessary data,
+ * (defined by the form in mod_form.php) this function
+ * will create a new instance and return the id number
+ * of the new instance.
+ *
+ * @return int The id of the newly inserted philosophers record
+ * @throws dml_exception
+ */
+function responsim_add_variables($varname) {
+    global $DB;
+    
+    // insert into db
+        $add_params = ['variable' => $varname];
+    $id = $DB->insert_record('responsim_variables', $add_params);
+
+    return $id;
+}
+
+function responsim_add_values($varid, $value) {
+    global $DB,$USER;
+    // pre-processing
+    // insert into db
+        $add_params = ['variable' => $varid,  'mdl_user' => $USER->id,'gamesession' => 1,'variable_value'=> $value];
+    $id = $DB->insert_record('responsim_variable_values', $add_params);
+    
+//     echo var_dump($USER->id);
+
+    return $id;
+}
+
+
+
+
+/**
+ * Returns a list of all current variables
+ *
+ * @param int    $courseid   ID of the course
+ * @return array table of variables
+ */
+function list_all_variables($courseID,$editable=false) {
+    global $DB;
+   //Standard values without submitting the form
+
+//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+//    $numactivies = count($activities);
+   
+   $table = new html_table();
+   if($editable) 
+   {
+   $table->head = array( 'Variable' , 'Wert', 'bearbeiten');
+   }
+   else {
+   $table->head = array( 'Variable' , 'Wert');
+   }
+   
+   $records_vars = $DB->get_records('responsim_variables');
+   
+   // echo $OUTPUT->heading('Kursinformationen: '.get_course($courseID)->fullname  ,2);
+//    $sql_params = ['course' => $courseID ];
+//   foreach($activities as $index => $activity)  {
+// 
+//    if($activity['expected']>0 )  {
+//        $record_params = ['id' => $activity['id']];
+//        $date_expected=$DB->get_record('course_modules',$record_params,$fields='*' );
+//        // echo $OUTPUT->heading("&nbsp"."&#8226". $activity['name'].": ".userdate($date_expected->completionexpected) ,5);
+foreach ($records_vars as $var) {
+
+$record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
+    if($editable)
+    {
+    $table->data[] = array($var->variable,$record_value ->variable_value,"edit");
+    }
+    
+    else
+    {
+    $table->data[] = array($var->variable,$record_value ->variable_value);
+    }
+    }
+ 
+
+  return $table;
+}
+
+
 
 

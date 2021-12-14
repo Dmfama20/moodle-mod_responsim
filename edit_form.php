@@ -41,14 +41,22 @@ class responsim_variables_form extends moodleform {
             $mform->addElement('hidden', $name, $value);
             $mform->setType($name, PARAM_RAW);
         }
-        
+        $mform->addElement('static', '', '', "Variablen anlegen");
         $attr_var_name=array('size'=>'20');
-        $mform->addElement('text', 'variable-name', "Variablen-Name", $attr_var_name);
+        $mform->addElement('text', 'varname', "Variablen-Name", $attr_var_name);
+         $mform->setType('varname', PARAM_TEXT);
+         
+          $attr_var_value=array('size'=>'20');
+        $mform->addElement('text', 'varvalue', "Variablen-Wert", $attr_var_value);
+         $mform->setType('varvalue', PARAM_TEXT);
+        
+          $mform->addElement('static', '', '', "Liste der aktuellen Variablen");
+    
         
         
-        $maxbytes=$CFG->maxbytes;
-        $mform->addElement('static', '', '', "Bitte CSV-Datei hochladen!");
-      $mform->addElement('filepicker', 'userfile', get_string('file'), null, array('maxbytes' => $maxbytes, 'accepted_types' => '*'));
+//         $maxbytes=$CFG->maxbytes;
+//         $mform->addElement('static', '', '', "Bitte CSV-Datei hochladen!");
+//       $mform->addElement('filepicker', 'userfile', get_string('file'), null, array('maxbytes' => $maxbytes, 'accepted_types' => '*'));
      
 
 

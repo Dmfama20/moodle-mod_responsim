@@ -76,19 +76,35 @@ $mform->display();
 if($data = $mform->get_data()) {
     //  redirect(new moodle_url('/local/dexpmod/index.php', $currentparams));
 
-    $content = $mform->get_file_content('userfile');
+    $varname = $data->varname;
+    $varid= responsim_add_variables($varname);
     
-   echo var_dump($content);    
+    $value=$data->varvalue;
+    responsim_add_values($varid, $value);
+      $table=list_all_variables($course->id);
+    
+
+   echo html_writer::table($table);
+
 
 }
 
 else {
 
+//      $table=list_changed_variables($course->id);
+//  $idsession=responsim_add_variables();
+//   $idsession=responsim_add_values();
+
+    $table=list_all_variables($course->id,$edit=true);
+    
+
+   echo html_writer::table($table);
+
    
     
 }
 
-echo "Something TODO: EDit";
+
 
 
 
