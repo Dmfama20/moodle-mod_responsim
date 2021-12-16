@@ -29,6 +29,9 @@ require_once(__DIR__.'/edit_form.php');
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
 
+// question id.
+$questionid = optional_param('questionid',0, PARAM_INT);
+
 // Activity instance id.
 $r = optional_param('r', 0, PARAM_INT);
 
@@ -56,39 +59,32 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/responsim/edit_question.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-//Add a fake block which is displaying some addtional data
-responsim_add_fake_blocks($PAGE,$cm);
-
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'questions';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+echo $OUTPUT ->header( );
 
 
-$mform = new responsim_questions_form_add(null);
+$mform = new responsim_questions_form_edit(null, array('questionid'=>$questionid ));
 //display the form
 $mform->display();
 
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
   
-
-    $questionname = $data->questionname;
-    $questiontext = $data->questiontext['text'];
-    $varid= responsim_add_question($questionname,$questiontext);
-    $table=list_all_questions();
-    echo html_writer::table($table);                         
+    $update_params = ['id' => $questionid, 'question_text' => $data->questiontext['text'], 'question_title ' => $data->questionname];
+    $DB->update_record('responsim_questions',$update_params );   
+    // redirect(new moodle_url('mod/responsim/edit_questions.php?id=570&questionid=3'));                  
 }
 
 else    {
-    $table=list_all_questions();
-    echo html_writer::table($table);
-    }
 
+
+
+  
+    }
 
 
 echo $OUTPUT->footer();

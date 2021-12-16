@@ -50,6 +50,7 @@ function xmldb_responsim_upgrade($oldversion) {
         // Adding fields to table responsim_questions.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('question_text', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('question_title', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
 
         // Adding keys to table responsim_questions.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
@@ -143,6 +144,8 @@ function xmldb_responsim_upgrade($oldversion) {
         // Adding fields to table responsim_variables.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
         $table->add_field('variable', XMLDB_TYPE_CHAR, '50', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('visible', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '1');
+        $table->add_field('deleted', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, '0');
 
         // Adding keys to table responsim_variables.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);

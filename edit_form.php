@@ -52,14 +52,72 @@ class responsim_variables_form extends moodleform {
         
           $mform->addElement('static', '', '', "Liste der aktuellen Variablen");
     
+    
+        $this->add_action_buttons($cancel = false, $submitlabel='OK');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
+
+class responsim_questions_form_add extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $CFG;
+       
+        $mform = $this->_form; // Don't forget the underscore! 
+        foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        }
+        $mform->addElement('static', '', '', "Fragen anlegen");
+        $attr_question_name=array('size'=>'20');
+        $mform->addElement('text', 'questionname', "Fragen-Name", $attr_question_name);
+        $mform->setType('questionname', PARAM_TEXT);
+
+        $mform->addElement('editor', 'questiontext', "Fragentext");
+        $mform->setType('questiontext', PARAM_RAW);
+         
+    
         
-        
-//         $maxbytes=$CFG->maxbytes;
-//         $mform->addElement('static', '', '', "Bitte CSV-Datei hochladen!");
-//       $mform->addElement('filepicker', 'userfile', get_string('file'), null, array('maxbytes' => $maxbytes, 'accepted_types' => '*'));
-     
+          $mform->addElement('static', '', '', "Liste der aktuellen Fragen");
+    
+    
+        $this->add_action_buttons($cancel = false, $submitlabel='OK');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
 
 
+class responsim_questions_form_edit extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $DB;
+       
+        $mform = $this->_form; // Don't forget the underscore! 
+        foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        }
+        $mform->addElement('static', '', '', "Fragen bearbeiten");
+        $attr_question_name=array('size'=>'20');
+        //  echo var_dump( $this->_customdata['questionid']);
+
+        $question= $DB->get_record('responsim_questions', ['id' =>$this->_customdata['questionid'] ]);
+
+        //  echo var_dump($question);
+
+        $mform->addElement('text', 'questionname', "Fragen-Name", $attr_question_name)->setValue($question->question_title);
+        $mform->setType('questionname', PARAM_TEXT);
+
+        $mform->addElement('editor', 'questiontext', "Fragentext")->setValue( array('text' => $question->question_text) );
+        $mform->setType('questiontext', PARAM_RAW);
     
         $this->add_action_buttons($cancel = false, $submitlabel='OK');
     

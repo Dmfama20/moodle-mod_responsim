@@ -81,7 +81,7 @@ if($data = $mform->get_data()) {
     
     $value=$data->varvalue;
     responsim_add_values($varid, $value);
-      $table=list_all_variables($course->id);
+      $table=list_all_variables();
     
 
    echo html_writer::table($table);
