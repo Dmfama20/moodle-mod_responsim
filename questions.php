@@ -62,31 +62,35 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
 //Add a fake block which is displaying some addtional data
-responsim_add_fake_blocks($PAGE,$cm);
+// responsim_add_fake_blocks($PAGE,$cm);
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
 $currenttab = 'questions';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
+// $url_add_question = html_writer::link(new moodle_url('/mod/responsim/add_question.php', array('id' => $PAGE->cm->id ))
+// , "Frage erstellen", array('class' => 'btn btn-primary'));
 
-$mform = new responsim_questions_form_add(null);
+// echo $OUTPUT->add_button($url_add_question);
+
+
+$mform = new responsim_add_category_form(null, array('cmid'=>$cm->id, 'courseid'=>$course->id ));
 //display the form
 $mform->display();
 
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
   
+  
+    $table=list_all_questions($data );
 
-    $questionname = $data->questionname;
-    $questiontext = $data->questiontext['text'];
-    $varid= responsim_add_question($questionname,$questiontext);
-    $table=list_all_questions();
-    echo html_writer::table($table);                         
+    echo html_writer::table($table);                    
 }
 
 else    {
-    $table=list_all_questions();
-    echo html_writer::table($table);
+
+    
+  
     }
 
 

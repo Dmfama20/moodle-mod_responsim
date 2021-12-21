@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * edits an instance of responsim.
+ * Prints an instance of responsim.
  *
  * @package     responsim
  * @copyright   2021 Your Name <you@example.com>
@@ -56,57 +56,46 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/responsim/add_question.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
 //Add a fake block which is displaying some addtional data
-responsim_add_fake_blocks($PAGE,$cm);
+// responsim_add_fake_blocks($PAGE,$cm);
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab='edit';
-echo $OUTPUT->header( $cm, $currenttab, false, null, "TEst");
+$currenttab = 'questions';
+echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
-$mform = new responsim_variables_form(null, array('courseid'=>$course->id, 'url'=>$PAGE->url));
+
+$mform = new responsim_questions_form_add(null);
 //display the form
 $mform->display();
 
+
+if ($mform->is_cancelled())     {
+
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responsim/questions.php', $currentparams));  
+}
+
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
-    //  redirect(new moodle_url('/local/dexpmod/index.php', $currentparams));
+  
 
-    $varname = $data->varname;
-    $varid= responsim_add_variables($varname);
-    
-    $value=$data->varvalue;
-    responsim_add_values($varid, $value);
-      $table=list_all_variables();
-    
+    $questionname = $data->questionname;
+    $questiontext = $data->questiontext['text'];
+    $varid= responsim_add_question($questionname,$questiontext);
 
-   echo html_writer::table($table);
-
-
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responsim/questions.php', $currentparams));
+                         
 }
 
-else {
+else    {
 
-//      $table=list_changed_variables($course->id);
-//  $idsession=responsim_add_variables();
-//   $idsession=responsim_add_values();
-
-    $table=list_all_variables($course->id,$edit=true);
-    
-
-   echo html_writer::table($table);
-
-   
-    
-}
-
-
-
-
+    }
 
 
 

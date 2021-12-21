@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 /**
  * Prints an instance of responsim.
  *
@@ -64,30 +65,17 @@ $PAGE->set_context($modulecontext);
 // responsim_add_fake_blocks($PAGE,$cm);
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'edit-simulations';
+$currenttab = 'answers';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
-$mform = new responsim_simulation_edit_form(null ,array('cmid'=>$cm->id ) );
-//display the form
-$mform->display();
+$url_add_question = html_writer::link(new moodle_url('/mod/responsim/add_answer.php', array('id' => $PAGE->cm->id ))
+, "Antwort erstellen", array('class' => 'btn btn-primary'));
 
-if ($mform->is_cancelled())     {
+echo $OUTPUT->add_button($url_add_question);
+$table=list_all_answers();
+echo html_writer::table($table);
 
-    $currentparams = ['id' => $cm->id];
-    redirect(new moodle_url('/mod/responsim/view.php', $currentparams));  
-}
-// $mform->set_data((object)$currentparams);
-if($data = $mform->get_data()) {
 
-$arrfields = explode(',', $data->simedit);
-
-responsim_add_simulation($arrfields);
-
-}
-
-else {
-    
-}
 
 
 echo $OUTPUT->footer();

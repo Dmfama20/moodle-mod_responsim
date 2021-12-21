@@ -62,7 +62,7 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
 //Add a fake block which is displaying some addtional data
-responsim_add_fake_blocks($PAGE,$cm);
+// responsim_add_fake_blocks($PAGE,$cm);
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
 $currenttab = 'rules';

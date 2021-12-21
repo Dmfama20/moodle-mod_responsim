@@ -13,8 +13,9 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 /**
- * Prints an instance of responsim.
+ * edits an instance of responsim.
  *
  * @package     responsim
  * @copyright   2021 Your Name <you@example.com>
@@ -64,30 +65,38 @@ $PAGE->set_context($modulecontext);
 // responsim_add_fake_blocks($PAGE,$cm);
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'edit-simulations';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+$currenttab='variables';
+echo $OUTPUT->header( $cm, $currenttab, false, null, "TEst");
 
-$mform = new responsim_simulation_edit_form(null ,array('cmid'=>$cm->id ) );
+$mform = new responsim_variables_form(null, array('courseid'=>$course->id, 'url'=>$PAGE->url));
 //display the form
 $mform->display();
+
 
 if ($mform->is_cancelled())     {
 
     $currentparams = ['id' => $cm->id];
-    redirect(new moodle_url('/mod/responsim/view.php', $currentparams));  
+    redirect(new moodle_url('/mod/responsim/variables.php', $currentparams));  
 }
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
 
-$arrfields = explode(',', $data->simedit);
-
-responsim_add_simulation($arrfields);
+    $varname = $data->varname;
+    $value=$data->varvalue;
+    $varid= responsim_add_variables($varname, $value);
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responsim/variables.php', $currentparams));    
 
 }
 
 else {
     
 }
+
+
+
+
+
 
 
 echo $OUTPUT->footer();

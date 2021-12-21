@@ -118,7 +118,7 @@ class mod_responsim_renderer extends plugin_renderer_base {
      */
     public function continue_links( $lastpageseenid) {
         global $CFG;
-        $output = $this->output->box("Sie können folgende Wahl treffen: Bla bla bla .....", 'generalbox boxaligncenter');
+        $output = $this->output->box("Sie <b>können</b> folgende Wahl treffen: Bla bla bla .....", 'generalbox boxaligncenter');
         $output .= $this->output->box_start('center');
 
         $opt1 = html_writer::link(new moodle_url('/mod/lesson/view.php', array('id' => $this->page->cm->id,
@@ -127,7 +127,7 @@ class mod_responsim_renderer extends plugin_renderer_base {
         $output .= '&nbsp;';
 
         $opt2 = html_writer::link(new moodle_url('/mod/lesson/view.php', array('id' => $this->page->cm->id,
-            'pageid' => '27', 'startlastseen' => 'no')), "Alternative 2", array('class' => 'btn btn-secondary'));
+            'pageid' => '27', 'startlastseen' => 'no')), "<i>Alternative</i> 2", array('class' => 'btn btn-secondary'));
         $output .= html_writer::tag('span', $opt2, array('class'=>'lessonbutton standardbutton'));
         
         $output .= '&nbsp;';
@@ -145,6 +145,23 @@ class mod_responsim_renderer extends plugin_renderer_base {
         $output .= $this->output->box_end();
         return $output;
     }
+
+
+    /**
+     * Returns HTML to display a continue button
+     * @param lesson $lesson
+     * @param int $lastpageseen
+     * @return string
+     */
+     public function add_button( $url) {
+        // $output = $this->output->box("Sie <b>können</b> folgende Wahl treffen: Bla bla bla .....", 'generalbox boxaligncenter');
+        $output = $this->output->box_start('center');
+
+        $output .= html_writer::tag('span',  $url , array('class'=>'lessonbutton standardbutton'));
+        $output .= $this->output->box_end();
+        return $output;
+    }
+
 
     /**
      * Returns HTML to display a page to the user

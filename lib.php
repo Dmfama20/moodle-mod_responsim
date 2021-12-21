@@ -355,30 +355,23 @@ $record_value = $DB->get_record('responsim_variable_values', ['variable' => $var
  * @return int The id of the newly inserted philosophers record
  * @throws dml_exception
  */
-function responsim_add_variables($varname) {
-    global $DB;
+function responsim_add_variables($varname, $value) {
+    global $DB, $USER;
     
     // insert into db
         $add_params = ['variable' => $varname];
-    $id = $DB->insert_record('responsim_variables', $add_params);
+    $varid = $DB->insert_record('responsim_variables', $add_params);
 
-    return $id;
-}
-
-function responsim_add_values($varid, $value) {
-    global $DB,$USER;
-    // pre-processing
-    // insert into db
-        $add_params = ['variable' => $varid,  'mdl_user' => $USER->id,'gamesession' => 1,'variable_value'=> $value];
+    $add_params = ['variable' => $varid,  'mdl_user' => $USER->id,'gamesession' => 1,'variable_value'=> $value];
     $id = $DB->insert_record('responsim_variable_values', $add_params);
     
-//     echo var_dump($USER->id);
 
     return $id;
 }
 
+
 /**
- * Saves a new instance of the philosophers quiz into the database
+ * Saves a new question into the database
  *
  * Given an object containing all the necessary data,
  * (defined by the form in mod_form.php) this function
@@ -398,6 +391,60 @@ function responsim_add_question($questionname, $questiontext) {
     return $id;
 }
 
+/**
+ * Saves a new answer into the database
+ *
+ * Given an object containing all the necessary data,
+ * (defined by the form in mod_form.php) this function
+ * will create a new instance and return the id number
+ * of the new instance.
+ *
+ * @return int The id of the newly inserted philosophers record
+ * @throws dml_exception
+ */
+function responsim_add_answer($answername, $answertext) {
+    global $DB;
+        // insert into db
+        $add_params = ['answer_title' => $answername, 'answer_text'=> $answertext];
+        $id = $DB->insert_record('responsim_answers', $add_params);
+
+    return $id;
+}
+
+
+/**
+ * Saves a new simulation into the database
+ *
+ *
+ * @return int The id of the newly inserted responsim record
+ * @throws dml_exception
+ */
+function responsim_add_simulation($questionids) {
+    global $DB;
+        // insert into db
+        $counter=0;
+        foreach($questionids as $id)    {
+            if($counter==0) {
+        
+                // This is the first question of the simulation
+                $add_params = ['question' => $id,'first_question'=> true,];
+                $insertedid= $DB->insert_record('responsim_simulations', $add_params);
+            }
+            else    {
+               
+                $add_params = ['question' => $id,'first_question'=> false,];
+                $insertedid= $DB->insert_record('responsim_simulations', $add_params);
+            }
+
+            $counter++;
+
+            }
+        
+            // $add_params = ['answer_title' => $answername, 'answer_text'=> $answertext];
+            // $id = $DB->insert_record('responsim_answers', $add_params);
+
+    return $id;
+}
 
 
 
@@ -408,7 +455,7 @@ function responsim_add_question($questionname, $questiontext) {
  * @return array table of variables
  */
 function list_all_variables($editable=false) {
-    global $DB;
+    global $DB, $PAGE;
    //Standard values without submitting the form
 
 //    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
@@ -428,7 +475,18 @@ foreach ($records_vars as $var) {
 
 $record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
     if($editable)   {
-    $table->data[] = array($var->variable,$record_value ->variable_value,"hide/delete");
+        $data = array();
+        $url = new moodle_url('/mod/responsim/edit_variable.php', array(
+            'id'     => $PAGE->cm->id,
+            'variableid'=> $var->id
+        ));
+        $data[] = html_writer::link($url, $var->variable);
+        // $data[] = html_writer::link($url, format_string($page->title, true), array('id' => 'lesson-' . $page->id));
+        $data[] = $record_value ->variable_value;
+
+        $data[] = "hide/delete";
+        $table->data[] = $data;
+
     }
     
     else    {
@@ -442,11 +500,48 @@ $record_value = $DB->get_record('responsim_variable_values', ['variable' => $var
 
 
 /**
- * Returns a list of all current variables
+ * Returns a list of all current questions
  *
  * @return array table of variables
  */
-function list_all_questions() {
+function list_all_questions($formdata) {
+    global $DB, $PAGE;
+   //Standard values without submitting the form
+//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+//    $numactivies = count($activities);
+   
+   $table = new html_table();
+   
+   $table->head = array( 'Frage' , 'ID');
+   
+   
+foreach($formdata->selectcategories as $cat)    {
+
+   $getquestionss_config=  ['category' => $cat];   
+   $records_questions = $DB->get_records('question',$getquestionss_config);
+   
+foreach ($records_questions as $question) {
+        $data = array();
+        $url = new moodle_url('/question/question.php', array(
+            'courseid'     => $PAGE->course->id,
+            'id'=> $question->id
+        ));
+        $data[] = html_writer::link($url, $question->name);
+        $data[] = $question->id;
+        $table->data[] = $data;
+    }
+
+}
+
+  return $table;
+}
+
+/**
+ * Returns a list of all current questions
+ *
+ * @return array table of variables
+ */
+function list_all_answers() {
     global $DB;
    //Standard values without submitting the form
 //    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
@@ -454,14 +549,14 @@ function list_all_questions() {
    
    $table = new html_table();
    
-   $table->head = array( 'Frage' , 'anzeigen');
+   $table->head = array( 'Antwort' , 'anzeigen');
    
-   $records_questions = $DB->get_records('responsim_questions');
+   $records_answers = $DB->get_records('responsim_answers');
    
-foreach ($records_questions as $question) {
+foreach ($records_answers as $answer) {
    
     
-    $table->data[] = array($question->question_title,'bearbeiten');
+    $table->data[] = array($answer->answer_title,'bearbeiten');
     
     }
 
@@ -469,5 +564,59 @@ foreach ($records_questions as $question) {
 }
 
 
+ /**
+     * Gets all moodle question categories which are applicable for this game.
+     *
+     * @param int $coursemoduleid
+     *
+     * @return array
+     * @throws coding_exception
+     * @throws invalid_parameter_exception
+     * @throws moodle_exception
+     * @throws restricted_context_exception
+     */
+     function get_mdl_categories($coursemoduleid, $courseID) {
+        
+        $modinfo = get_fast_modinfo($courseID);
+        $coursemodule = $modinfo->get_cm($coursemoduleid);
+        $ctx = $coursemodule->context;
 
+        // load categories
+        $question_contexts = new question_edit_contexts($ctx);
+        $usable_question_contexts = $question_contexts->having_cap('moodle/question:useall');
+        $question_categories = question_category_options($usable_question_contexts);
+        /**
+         * structure of categories result:
+         * two-dimensional array with
+         * - first level (contexts): key = context name, value = array of categories in that context.
+         *   Contexts normally are 1: course, 2: course area, 3: core system.
+         * - second level (i.e. categories per context): key = "categoryId,contextId], value = name of the
+         *   category with proper indentation (visualizes hierarchy)
+         */
+        // transform categories
+        
+        // echo var_dump($question_categories['Kurs: TK1']);
+
+        foreach ($question_categories as $contextname => $categories) {
+           
+            
+            foreach($categories as $ids => $categoryname) {
+                
+
+
+
+                $tmpids = \explode(",", $ids);
+                 $contextid = \intval($tmpids[1]);
+                  $categoryid = \intval($tmpids[0]);
+
+                  $categories_array[] = array (
+                    'id'         => $categoryid,
+                    'contextid'   => $contextid,
+                    'name'       => format_string($categoryname),
+                    'contextname'=> $contextname,
+                );
+            }
+        }
+        return $categories_array;
+    }
 

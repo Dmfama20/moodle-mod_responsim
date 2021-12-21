@@ -13,6 +13,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
+
 /**
  * Prints an instance of responsim.
  *
@@ -28,8 +29,10 @@ require_once(__DIR__.'/edit_form.php');
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
 
-// Activity instance id.
-$r = optional_param('r', 0, PARAM_INT);
+// question id.
+$variableid = optional_param('variableid',0, PARAM_INT);
+
+
 
 if ($id) {
     $cm = get_coursemodule_from_id('responsim', $id, 0, false, MUST_EXIST);
@@ -55,39 +58,36 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/responsim/edit_variable.php', array('id' => $cm->id));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-//Add a fake block which is displaying some addtional data
-// responsim_add_fake_blocks($PAGE,$cm);
+echo $OUTPUT ->header( );
 
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'edit-simulations';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
-$mform = new responsim_simulation_edit_form(null ,array('cmid'=>$cm->id ) );
+$mform = new responsim_variable_form_edit(null, array('variableid'=>$variableid ));
 //display the form
 $mform->display();
 
-if ($mform->is_cancelled())     {
-
-    $currentparams = ['id' => $cm->id];
-    redirect(new moodle_url('/mod/responsim/view.php', $currentparams));  
-}
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
-
-$arrfields = explode(',', $data->simedit);
-
-responsim_add_simulation($arrfields);
-
+  
+  
+    $update_params = ['id' => $variableid, 'variable' => $data->varname];
+    $DB->update_record('responsim_variables',$update_params );   
+    $update_params = ['variable' => $variableid, 'variable_value' => $data->varvalue];
+    $DB->update_record('responsim_variable_values',$update_params ); 
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responswwwim/variables.php', $currentparams));                     
 }
 
-else {
-    
-}
+else    {
+
+
+
+  
+    }
 
 
 echo $OUTPUT->footer();

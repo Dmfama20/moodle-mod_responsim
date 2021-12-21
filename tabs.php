@@ -46,10 +46,10 @@ $tabs = $row = $inactive = $activated = array();
 
 
 $row[] = new tabobject('view', "$CFG->wwwroot/mod/responsim/view.php?id=$cm->id", "Simulation","Previewlesson");
-$row[] = new tabobject('edit', "$CFG->wwwroot/mod/responsim/edit.php?id=$cm->id", "Variablen", "Variablen");
+$row[] = new tabobject('variables', "$CFG->wwwroot/mod/responsim/variables.php?id=$cm->id", "Variablen", "Variablen");
 $row[] = new tabobject('questions', "$CFG->wwwroot/mod/responsim/questions.php?id=$cm->id", "Fragen", "Fragen");
 $row[] = new tabobject('rules', "$CFG->wwwroot/mod/responsim/rules.php?id=$cm->id", "Regeln","Regeln");
-$row[] = new tabobject('edit-simulations', "$CFG->wwwroot/mod/responsim/edit-simulations.php?id=$cm->id", "Simulations-Verwaltung","Simulations-Verwaltung");
+$row[] = new tabobject('simulations', "$CFG->wwwroot/mod/responsim/simulations.php?id=$cm->id", "Simulations-Verwaltung","Simulations-Verwaltung");
 $row[] = new tabobject('summary', "$CFG->wwwroot/mod/responsim/summary.php?id=$cm->id", "Auswertung", "Auswertung");
 
 

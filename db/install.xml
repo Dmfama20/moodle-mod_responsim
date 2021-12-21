@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/responsim/db" VERSION="20211214" COMMENT="XMLDB file for Moodle mod_responsim"
+<XMLDB PATH="mod/responsim/db" VERSION="20211221" COMMENT="XMLDB file for Moodle mod_responsim"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -35,8 +35,8 @@
     <TABLE NAME="responsim_answers" COMMENT="All answers of mod_responsim">
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
-        <FIELD NAME="question" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
-        <FIELD NAME="answer" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="answer_title" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="title of the answer"/>
+        <FIELD NAME="answer_text" TYPE="text" NOTNULL="true" SEQUENCE="false" COMMENT="text of the answer"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -59,6 +59,7 @@
         <FIELD NAME="mdl_user" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="question" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="answer" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="answer_correct" TYPE="int" LENGTH="1" NOTNULL="true" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
@@ -82,6 +83,31 @@
         <FIELD NAME="gamesession" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="id of the gamesession"/>
         <FIELD NAME="mdl_user" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false" COMMENT="id of the user"/>
         <FIELD NAME="variable_value" TYPE="char" LENGTH="50" NOTNULL="true" SEQUENCE="false" COMMENT="value of the variable"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="responsim_simulation_data" COMMENT="Simulations created">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="simulation" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the current simulation"/>
+        <FIELD NAME="first_question" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="First question in a sequence"/>
+        <FIELD NAME="next_question" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="last_question" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="end_question" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="Last question in a sequence"/>
+      </FIELDS>
+      <KEYS>
+        <KEY NAME="primary" TYPE="primary" FIELDS="id"/>
+      </KEYS>
+    </TABLE>
+    <TABLE NAME="responsim_simulations" COMMENT="All simulations of the module">
+      <FIELDS>
+        <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
+        <FIELD NAME="name" TYPE="text" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="mdl_user" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
+        <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

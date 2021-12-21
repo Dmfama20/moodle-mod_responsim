@@ -64,30 +64,16 @@ $PAGE->set_context($modulecontext);
 // responsim_add_fake_blocks($PAGE,$cm);
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'edit-simulations';
+$currenttab = 'simulations';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
-$mform = new responsim_simulation_edit_form(null ,array('cmid'=>$cm->id ) );
-//display the form
-$mform->display();
 
-if ($mform->is_cancelled())     {
+$url_add_simulation = html_writer::link(new moodle_url('/mod/responsim/add_simulation.php', array('id' => $PAGE->cm->id ))
+, "Simulation erstellen", array('class' => 'btn btn-primary'));
 
-    $currentparams = ['id' => $cm->id];
-    redirect(new moodle_url('/mod/responsim/view.php', $currentparams));  
-}
-// $mform->set_data((object)$currentparams);
-if($data = $mform->get_data()) {
 
-$arrfields = explode(',', $data->simedit);
+echo $OUTPUT->add_button($url_add_simulation);
 
-responsim_add_simulation($arrfields);
-
-}
-
-else {
-    
-}
 
 
 echo $OUTPUT->footer();
