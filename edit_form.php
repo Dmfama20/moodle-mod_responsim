@@ -106,12 +106,55 @@ class responsim_simulation_edit_form extends moodleform {
             $mform->setType($name, PARAM_RAW);
         }
 
+        $simdata= $DB->get_record('responsim_simulations',['id'=>  $this->_customdata['simid']]);
+
         $mform->addElement('static', '', '', "Fragen zur Simulation hinzufügen");
         $attr_simedit=array('size'=>'40');
-        $mform->addElement('text', 'simedit', "Fragen-IDs mit Kommas separiert", $attr_simedit) ;
+        if($simdata)    {
+            $mform->addElement('text', 'simedit', "Fragen-IDs mit Kommas separiert", $attr_simedit)->setValue($simdata->questions_raw); 
+        }
+        else    {
+            $mform->addElement('text', 'simedit', "Fragen-IDs mit Kommas separiert", $attr_simedit);
+        }
+         
+        // $mform->addElement('text', 'simedit', "Fragen-IDs mit Kommas separiert", $attr_simedit); 
         $mform->setType('simedit', PARAM_TEXT);
+        $mform->addElement('hidden', 'simid', $this->_customdata['simid']);
+        $mform->setType('simid', PARAM_INT);
+
          
         $this->add_action_buttons($cancel = true, $submitlabel='Speichern!');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
+
+
+class responsim_show_question_form extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $DB;
+
+
+       
+        $mform = $this->_form; // Don't forget the underscore! 
+        foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        }
+        $answers= $DB->get_records('question_answers',['question' =>  $this->_customdata['questionid']]);
+        $radioarray=array();
+        $alignment=array();
+        foreach($answers as $answer)    {
+            $radioarray[] = $mform->createElement('radio', 'question', '', $answer->answer, $answer->id );
+            $alignment[]='<br/>';
+        }
+        $mform->addGroup($radioarray, 'radioar', '', $alignment, false);
+         
+        $this->add_action_buttons($cancel = false, $submitlabel='Abschicken!');
     
     }
     // //Custom validation should be added here
@@ -160,7 +203,7 @@ class responsim_simulations_form_add extends moodleform {
         $attr_simulation_name=array('size'=>'20');
         $mform->addElement('text', 'name', "Simulations-Name", $attr_simulation_name);
         $mform->setType('name', PARAM_TEXT);
-        $this->add_action_buttons($cancel = true, $submitlabel='Speichern!');
+        $this->add_action_buttons($cancel = false, $submitlabel='Anlegen!');
     
     }
     // //Custom validation should be added here

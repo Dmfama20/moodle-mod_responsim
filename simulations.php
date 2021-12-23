@@ -67,12 +67,41 @@ $OUTPUT = $PAGE->get_renderer('mod_responsim');
 $currenttab = 'simulations';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
+$mform = new responsim_simulations_form_add(null, array('courseid'=>$course->id, 'url'=>$PAGE->url));
+//display the form
+$mform->display();
 
-$url_add_simulation = html_writer::link(new moodle_url('/mod/responsim/add_simulation.php', array('id' => $PAGE->cm->id ))
-, "Simulation erstellen", array('class' => 'btn btn-primary'));
+
+if ($mform->is_cancelled())     {
+
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responsim/view.php', $currentparams));  
+}
+// $mform->set_data((object)$currentparams);
+if($data = $mform->get_data()) {
+
+    $simname = $data->name;
+    $varid= responsim_add_simulation( $simname);
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responsim/simulations.php', $currentparams));
+
+   
+}
+
+else {
+    $table=list_all_simulations();
+    
+   
+   echo html_writer::table($table);
 
 
-echo $OUTPUT->add_button($url_add_simulation);
+    
+}
+
+
+
+
+
 
 
 

@@ -116,31 +116,40 @@ class mod_responsim_renderer extends plugin_renderer_base {
      * @param int $lastpageseen
      * @return string
      */
-    public function continue_links( $lastpageseenid) {
-        global $CFG;
-        $output = $this->output->box("Sie <b>können</b> folgende Wahl treffen: Bla bla bla .....", 'generalbox boxaligncenter');
+    public function show_question( $questionid) {
+        global $DB;
+        $counter=1;
+        $question= $DB->get_record('question', ['id'=>$questionid]);
+        $answers= $DB->get_records('question_answers', ['question'=>$questionid]);
+        $simulation= $DB->get_record('responsim_simulations',['id'=> '1']);
+        $simulation_data= $DB->get_records('responsim_simulation_data',['simulation'=> '1']);
+        $question_data=$DB->get_record('responsim_simulation_data',['simulation'=> '1','question'=>$questionid]);
+        
+        $output = $this->output->box($question->questiontext);
         $output .= $this->output->box_start('center');
 
-        $opt1 = html_writer::link(new moodle_url('/mod/lesson/view.php', array('id' => $this->page->cm->id,
-            'pageid' => $lastpageseenid, 'startlastseen' => 'yes')), "Alternative 1", array('class' => 'btn btn-primary'));
-        $output .= html_writer::tag('span', $opt1 , array('class'=>'lessonbutton standardbutton'));
-        $output .= '&nbsp;';
 
-        $opt2 = html_writer::link(new moodle_url('/mod/lesson/view.php', array('id' => $this->page->cm->id,
-            'pageid' => '27', 'startlastseen' => 'no')), "<i>Alternative</i> 2", array('class' => 'btn btn-secondary'));
-        $output .= html_writer::tag('span', $opt2, array('class'=>'lessonbutton standardbutton'));
-        
-        $output .= '&nbsp;';
+        $output .= $this->output->box_end();
+        return $output;
+    }
 
-        $opt3 = html_writer::link(new moodle_url('/mod/lesson/view.php', array('id' => $this->page->cm->id,
-            'pageid' => '27', 'startlastseen' => 'no')), "Alternative 4", array('class' => 'btn btn-secondary'));
-        $output .= html_writer::tag('span', $opt3, array('class'=>'lessonbutton standardbutton'));
-        
-        $output .= '&nbsp;';
 
-        $opt4 = html_writer::link(new moodle_url('/mod/lesson/view.php', array('id' => $this->page->cm->id,
-            'pageid' => '27', 'startlastseen' => 'no')), "Alternative 4", array('class' => 'btn btn-secondary'));
-        $output .= html_writer::tag('span', $opt4, array('class'=>'lessonbutton standardbutton'));
+       /**
+     * Returns HTML to display a continue button
+     * @param lesson $lesson
+     * @param int $lastpageseen
+     * @return string
+     */
+    public function show_first_page( $simulationid) {
+        global $DB;
+        $simulationname=$DB->get_record('responsim_simulations',['id'=>$simulationid]);
+        $simulation_data=$DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
+        $output = $this->output->box("Möchten Sie mit der Simulation "."<i>".$simulationname->name."</i>"." starten?", 'generalbox boxaligncenter');
+        $output .= $this->output->box_start('center');
+
+        $button = html_writer::link(new moodle_url('/mod/responsim/view.php', array('id' => $this->page->cm->id,
+            'simulationid' => $simulationid, 'questionid' => reset($simulation_data)->question)), "Los Gehts! ", array('class' => 'btn btn-primary'));
+        $output .= html_writer::tag('span', $button , array('class'=>'lessonbutton standardbutton'));
 
         $output .= $this->output->box_end();
         return $output;

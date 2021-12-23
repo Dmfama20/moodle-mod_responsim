@@ -419,32 +419,75 @@ function responsim_add_answer($answername, $answertext) {
  * @return int The id of the newly inserted responsim record
  * @throws dml_exception
  */
-function responsim_add_simulation($questionids) {
-    global $DB;
+function responsim_add_simulation($simname) {
+    global $DB, $USER;
         // insert into db
-        $counter=0;
-        foreach($questionids as $id)    {
-            if($counter==0) {
-        
-                // This is the first question of the simulation
-                $add_params = ['question' => $id,'first_question'=> true,];
-                $insertedid= $DB->insert_record('responsim_simulations', $add_params);
-            }
-            else    {
+    
                
-                $add_params = ['question' => $id,'first_question'=> false,];
-                $insertedid= $DB->insert_record('responsim_simulations', $add_params);
-            }
-
-            $counter++;
-
-            }
+                $add_params = ['name' => $simname,'mdl_user'=> $USER->id, 'timecreated'=>time()];
+                $id= $DB->insert_record('responsim_simulations', $add_params);
         
-            // $add_params = ['answer_title' => $answername, 'answer_text'=> $answertext];
-            // $id = $DB->insert_record('responsim_answers', $add_params);
-
     return $id;
 }
+
+
+
+
+/**
+ * Saves a new simulation into the database
+ *
+ *
+ * @return int The id of the newly inserted responsim record
+ * @throws dml_exception
+ */
+function responsim_add_simulation_data($simdata,$simid,$simquestions) {
+    global $DB;
+        // insert into db
+
+
+        // save raw data to db
+
+        $DB->update_record('responsim_simulations',['id'=> $simid, 'questions_raw'=> $simquestions]);
+    $counter=1;
+
+    $questionids = array();
+        // We need more than one loop through the data since fields like "next_question" etc. has to be filled
+        foreach($simdata as $data)  {
+            $lentgth=count($simdata );
+            $copydata= $simdata;
+
+            if($counter==1) {
+                $add_params = ['simulation' => $simid,'first_question'=>true, 'question'=>$data, 'next_question'=>$simdata[1]];
+                $questionids[] = $DB->insert_record('responsim_simulation_data', $add_params);
+                next($simdata);
+            }
+            else    {
+                
+
+                if($counter !=$lentgth)    {
+                    // Check if this is the index  of the array
+                    $add_params = ['simulation' => $simid,'first_question'=>false, 'question'=>$data,'last_question'=>$simdata[key($simdata)-1]
+                    ,'next_question'=>next($simdata)];
+                    $questionids[] = $DB->insert_record('responsim_simulation_data', $add_params);
+
+                }
+                else{
+                    // This is the lasz index of the array
+                    $add_params = ['simulation' => $simid,'first_question'=>false, 'question'=>$data,'last_question'=>$simdata[key($simdata)-1],
+                    'end_question'=>true];
+                $questionids[] = $DB->insert_record('responsim_simulation_data', $add_params);
+
+                }
+                
+            }
+            $counter++;
+            
+        }
+
+        
+    return  $questionids;
+}
+
 
 
 
@@ -471,9 +514,9 @@ function list_all_variables($editable=false) {
    }
    $records_vars = $DB->get_records('responsim_variables');
    
-foreach ($records_vars as $var) {
+    foreach ($records_vars as $var) {
 
-$record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
+    $record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
     if($editable)   {
         $data = array();
         $url = new moodle_url('/mod/responsim/edit_variable.php', array(
@@ -562,6 +605,89 @@ foreach ($records_answers as $answer) {
 
   return $table;
 }
+
+
+
+
+/**
+ * Returns a list of all current simulations
+ *
+ * @return array table of simulations
+ */
+function list_all_simulations() {
+    global $DB, $PAGE;
+   //Standard values without submitting the form
+
+//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+//    $numactivies = count($activities);
+   
+   $table = new html_table();
+   $table->align[1] = 'right';
+  
+   $table->head = array( 'Simulation', ' ' );
+   
+  
+   $records_sims = $DB->get_records('responsim_simulations');
+   
+    foreach ($records_sims as $sim) {
+        $data = array();
+        $url = new moodle_url('/mod/responsim/edit_simulations.php', array(
+            'id'     => $PAGE->cm->id,
+            'simulationid'=> $sim->id
+        ));
+        $url2 = new moodle_url('/mod/responsim/edit_simulations.php', array(
+            'id'     => $PAGE->cm->id,
+            'simulationid'=> $sim->id
+        ));
+        $data[] = html_writer::link($url, $sim->name);
+        $data[] = html_writer::link($url2, 'löschen');
+        $table->data[] = $data;
+    }
+
+  return $table;
+}
+
+
+
+/**
+ * Returns a list of all current simulations
+ *
+ * @return array table of simulations
+ */
+function list_all_simulations_and_start() {
+    global $DB, $PAGE;
+   //Standard values without submitting the form
+
+//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+//    $numactivies = count($activities);
+   
+   $table = new html_table();
+   $table->align[1] = 'right';
+  
+   $table->head = array( 'Simulation' );
+   
+  
+   $records_sims = $DB->get_records('responsim_simulations');
+   
+    foreach ($records_sims as $sim) {
+
+        $simdata=$DB->get_records('responsim_simulation_data',['simulation'=>$sim->id] );
+        // Move pointer to first element of the array
+        $firstquestion=reset($simdata)->question;
+        $data = array();
+        $url = new moodle_url('/mod/responsim/view.php', array(
+            'id'     => $PAGE->cm->id,
+            'simulationid'=> $sim->id,
+            'questionid'=>$firstquestion,
+        ));
+        $data[] = html_writer::link($url, $sim->name);
+        $table->data[] = $data;
+    }
+
+  return $table;
+}
+
+
 
 
  /**

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/responsim/db" VERSION="20211221" COMMENT="XMLDB file for Moodle mod_responsim"
+<XMLDB PATH="mod/responsim/db" VERSION="20211223" COMMENT="XMLDB file for Moodle mod_responsim"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -92,6 +92,7 @@
       <FIELDS>
         <FIELD NAME="id" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="true"/>
         <FIELD NAME="simulation" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the current simulation"/>
+        <FIELD NAME="question" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the question"/>
         <FIELD NAME="first_question" TYPE="int" LENGTH="1" NOTNULL="false" SEQUENCE="false" COMMENT="First question in a sequence"/>
         <FIELD NAME="next_question" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
         <FIELD NAME="last_question" TYPE="int" LENGTH="20" NOTNULL="false" SEQUENCE="false"/>
@@ -108,6 +109,7 @@
         <FIELD NAME="mdl_user" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timecreated" TYPE="int" LENGTH="10" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="timemodified" TYPE="int" LENGTH="10" NOTNULL="true" DEFAULT="0" SEQUENCE="false"/>
+        <FIELD NAME="questions_raw" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

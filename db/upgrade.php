@@ -189,25 +189,26 @@ function xmldb_responsim_upgrade($oldversion) {
 
     if ($oldversion < 2021120700) {
 
-        // Define table responsim_simulation_data to be created.
-        $table = new xmldb_table('responsim_simulation_data');
+         // Define table responsim_simulation_data to be created.
+         $table = new xmldb_table('responsim_simulation_data');
 
-        // Adding fields to table responsim_simulation_data.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('simulation', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('first_question', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
-        $table->add_field('next_question', XMLDB_TYPE_INTEGER, '20', null, null, null, null);
-        $table->add_field('last_question', XMLDB_TYPE_INTEGER, '20', null, null, null, null);
-        $table->add_field('end_question', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
-
-        // Adding keys to table responsim_simulation_data.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-
-        // Conditionally launch create table for responsim_simulation_data.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
-
+         // Adding fields to table responsim_simulation_data.
+         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+         $table->add_field('simulation', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+         $table->add_field('question', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+         $table->add_field('first_question', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+         $table->add_field('next_question', XMLDB_TYPE_INTEGER, '20', null, null, null, null);
+         $table->add_field('last_question', XMLDB_TYPE_INTEGER, '20', null, null, null, null);
+         $table->add_field('end_question', XMLDB_TYPE_INTEGER, '1', null, null, null, null);
+ 
+         // Adding keys to table responsim_simulation_data.
+         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+ 
+         // Conditionally launch create table for responsim_simulation_data.
+         if (!$dbman->table_exists($table)) {
+             $dbman->create_table($table);
+         }
+ 
 
         // Responsim savepoint reached.
         upgrade_mod_savepoint(true, 2021120700, 'responsim');
@@ -215,23 +216,24 @@ function xmldb_responsim_upgrade($oldversion) {
 
     if ($oldversion < 2021120700) {
 
-        // Define table responsim_simulations to be created.
-        $table = new xmldb_table('responsim_simulations');
+             // Define table responsim_simulations to be created.
+             $table = new xmldb_table('responsim_simulations');
 
-        // Adding fields to table responsim_simulations.
-        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
-        $table->add_field('mdl_user', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
-        $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
-
-        // Adding keys to table responsim_simulations.
-        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-
-        // Conditionally launch create table for responsim_simulations.
-        if (!$dbman->table_exists($table)) {
-            $dbman->create_table($table);
-        }
+             // Adding fields to table responsim_simulations.
+             $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+             $table->add_field('questions_raw', XMLDB_TYPE_TEXT, null, null, null, null, null);
+             $table->add_field('name', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+             $table->add_field('mdl_user', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+             $table->add_field('timecreated', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, null);
+             $table->add_field('timemodified', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, null, '0');
+     
+             // Adding keys to table responsim_simulations.
+             $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+     
+             // Conditionally launch create table for responsim_simulations.
+             if (!$dbman->table_exists($table)) {
+                 $dbman->create_table($table);
+             }
 
         // Responsim savepoint reached.
         upgrade_mod_savepoint(true, 2021120700, 'responsim');

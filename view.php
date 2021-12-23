@@ -32,6 +32,12 @@ $id = optional_param('id', 0, PARAM_INT);
 // Activity instance id.
 $r = optional_param('r', 0, PARAM_INT);
 
+// question-id.
+$questionid = optional_param('questionid', 0, PARAM_INT);
+
+// simulation-id.
+$simulationid = optional_param('simulationid', 0, PARAM_INT);
+
 if ($id) {
     $cm = get_coursemodule_from_id('responsim', $id, 0, false, MUST_EXIST);
     $course = $DB->get_record('course', array('id' => $cm->course), '*', MUST_EXIST);
@@ -61,17 +67,67 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
+
+if( $simulationid !=0 && $questionid     !=0 ) {
+
+    $simulation=$DB->get_record('responsim_simulations',['id'=>$simulationid]);
+    $simulation_data=$DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
+    $questiondata = $DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
+    $currentquestion=  $DB->get_record('responsim_simulation_data',['simulation'=>$simulationid, 'question'=>$questionid]);
+
+
+
 //Add a fake block which is displaying some addtional data
 responsim_add_fake_blocks($PAGE,$cm);
+
+$url_next_question= new moodle_url('/mod/responsim/view.php',
+array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->next_question));
+// echo $OUTPUT->show_question($questionid);
+$mform = new responsim_show_question_form($url_next_question, array('questionid'=>$questionid));
+// $mform->set_data((object)$currentparams);
+if($data = $mform->get_data()) {
+    $url_next_question=new moodle_url('/mod/responsim/view.php',
+    array('id' => $cm->id, 'simulationid'=>$simulatationid,'questionid'=>$currentquestion->question));
+
+
+
+
+    redirect($url_next_question);
+
+}
+
+else {
+   
+
+    
+}
+
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
 $currenttab = 'view';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
-
-
-echo $OUTPUT->continue_links('25');
-
-
-
-
+echo $OUTPUT->show_question($questionid);
+$mform->display();
 echo $OUTPUT->footer();
+
+
+
+
+}
+
+
+
+
+
+else    {
+
+$OUTPUT = $PAGE->get_renderer('mod_responsim');
+$currenttab = 'view';
+echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+$table=list_all_simulations_and_start();
+echo html_writer::table($table);
+echo $OUTPUT->footer();
+
+}
+
+

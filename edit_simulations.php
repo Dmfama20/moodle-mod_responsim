@@ -27,12 +27,11 @@ require_once(__DIR__.'/edit_form.php');
 
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
+// ID of the simulation.
+$simulationid = optional_param('simulationid',0,  PARAM_INT);
 
 // Activity instance id.
 $r = optional_param('r', 0, PARAM_INT);
-// Activity instance id.
-$simulationid = optional_param('simulationid', 0, PARAM_INT);
-
 
 if ($id) {
     $cm = get_coursemodule_from_id('responsim', $id, 0, false, MUST_EXIST);
@@ -63,14 +62,13 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-//Add a fake block which is displaying some addtional data
-// responsim_add_fake_blocks($PAGE,$cm);
 
 
 
-$mform = new responsim_simulation_edit_form(null ,array('simid'=>$simulationid ) );
-//display the form
+$simulation = $DB->get_record('responsim_simulations',['id'=>$simulationid]); 
 
+$rdurl=new moodle_url('/mod/responsim/simulations.php',array('id' => $cm->id));
+$mform = new responsim_simulation_edit_form(null, array('simid'=>$simulationid ));
 
 if ($mform->is_cancelled())     {
 
@@ -79,22 +77,21 @@ if ($mform->is_cancelled())     {
 }
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
-
-responsim_add_simulation_raw_data($data->simedit, $simulationid);
-
+$rdurl=new moodle_url('/mod/responsim/simulations.php',array('id' => $cm->id));
 $arrfields = explode(',', $data->simedit);
-
-responsim_add_simulation_data($arrfields,$simulationid);
+responsim_add_simulation_data($arrfields,$data->simid, $data->simedit);
+redirect($rdurl);
 
 }
 
 else {
     
 }
-
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'edit-simulations';
+$currenttab = 'simulations';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
+echo $OUTPUT->heading($simulation->name." bearbeiten:",4);
 $mform->display();
+
 echo $OUTPUT->footer();
