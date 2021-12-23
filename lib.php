@@ -442,14 +442,17 @@ function responsim_add_simulation($simname) {
  */
 function responsim_add_simulation_data($simdata,$simid,$simquestions) {
     global $DB;
-        // insert into db
-
-
         // save raw data to db
-
         $DB->update_record('responsim_simulations',['id'=> $simid, 'questions_raw'=> $simquestions]);
-    $counter=1;
+        // Delete existing records if necessary
+        $check= $DB->record_exists('responsim_simulation_data',['simulation'=> $simid]);
 
+        if($check)  {
+            $DB->delete_records('responsim_simulation_data',['simulation'=> $simid]);
+        }
+
+
+    $counter=1;
     $questionids = array();
         // We need more than one loop through the data since fields like "next_question" etc. has to be filled
         foreach($simdata as $data)  {

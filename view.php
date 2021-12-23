@@ -87,11 +87,7 @@ $mform = new responsim_show_question_form($url_next_question, array('questionid'
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
     $url_next_question=new moodle_url('/mod/responsim/view.php',
-    array('id' => $cm->id, 'simulationid'=>$simulatationid,'questionid'=>$currentquestion->question));
-
-
-
-
+    array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->question));
     redirect($url_next_question);
 
 }
