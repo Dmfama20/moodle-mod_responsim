@@ -44,13 +44,13 @@ function xmldb_responsim_upgrade($oldversion) {
     
         if ($oldversion < 2021120700) {
 
-        // Define table responsim_questions to be created.
+         // Define table responsim_questions to be created.
         $table = new xmldb_table('responsim_questions');
 
         // Adding fields to table responsim_questions.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('question_text', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
-        $table->add_field('question_title', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('question', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('tag', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
 
         // Adding keys to table responsim_questions.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
@@ -60,6 +60,7 @@ function xmldb_responsim_upgrade($oldversion) {
             $dbman->create_table($table);
         }
 
+
         // Responsim savepoint reached.
         upgrade_mod_savepoint(true, 2021120700, 'responsim');
     }
@@ -67,14 +68,13 @@ function xmldb_responsim_upgrade($oldversion) {
     
         if ($oldversion < 2021120700) {
 
-     
         // Define table responsim_answers to be created.
         $table = new xmldb_table('responsim_answers');
 
         // Adding fields to table responsim_answers.
         $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-        $table->add_field('answer_title', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
-        $table->add_field('answer_text', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('tag', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+        $table->add_field('answer', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
 
         // Adding keys to table responsim_answers.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);

@@ -252,19 +252,33 @@ class responsim_questions_form_edit extends moodleform {
             $mform->addElement('hidden', $name, $value);
             $mform->setType($name, PARAM_RAW);
         }
-        $mform->addElement('static', '', '', "Fragen bearbeiten");
-        $attr_question_name=array('size'=>'20');
+        $mform->addElement('static', '', '', "Frage:");
+        $attr_question_name=array('size'=>'30');
         //  echo var_dump( $this->_customdata['questionid']);
+        
+        $questionid = $this->_customdata['questionid'];
 
-        $question= $DB->get_record('responsim_questions', ['id' =>$this->_customdata['questionid'] ]);
+        $question= $DB->get_record('question', ['id' =>$this->_customdata['questionid'] ]);
+        $answers= $DB->get_records('question_answers', ['question' =>$this->_customdata['questionid'] ]);
+        
+        $mform->addElement('hidden', 'qid',   $questionid );
+        $mform->setType('qid', PARAM_INT);
 
-        //  echo var_dump($question);
-
-        $mform->addElement('text', 'questionname', "Fragen-Name", $attr_question_name)->setValue($question->question_title);
-        $mform->setType('questionname', PARAM_TEXT);
-
-        $mform->addElement('editor', 'questiontext', "Fragentext")->setValue( array('text' => $question->question_text) );
-        $mform->setType('questiontext', PARAM_RAW);
+        
+     $mform->addElement('static', '', '', $question->questiontext);
+      $mform->addElement('text', 'questiontag', "Frage-Tag", $attr_question_name);
+        $mform->setType('questiontag', PARAM_RAW);
+       $mform->addElement('static', '', '', "Antworten:");
+     foreach($answers as $ans)  {
+     $mform->addElement('static', '', '',  $ans->answer);
+        $mform->addElement('text', $ans->id, $ans->id, $attr_question_name);
+        $mform->setType($ans->id, PARAM_RAW);
+     
+     }
+     
+     
+     
+     
     
         $this->add_action_buttons($cancel = true, $submitlabel='OK');
     

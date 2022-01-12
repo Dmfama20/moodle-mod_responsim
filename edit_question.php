@@ -74,8 +74,19 @@ $mform->display();
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
   
-    $update_params = ['id' => $questionid, 'question_text' => $data->questiontext['text'], 'question_title ' => $data->questionname];
-    $DB->update_record('responsim_questions',$update_params );   
+    $insert_params = ['question' =>  $data->qid, 'tag' => $data->questiontag];
+    $DB->insert_record('responsim_questions',$insert_params );   
+    
+    $answers  = $DB->get_records('question_answers', ['question' => $data->qid ] ); 
+    
+    foreach($answers as $ans)   {
+    
+     $insert_params = ['answer' => $ans->id, 'tag' => $data->ans];
+    $DB->insert_record('responsim_answers',$insert_params );   
+    
+    }
+    
+    
     // redirect(new moodle_url('mod/responsim/edit_questions.php?id=570&questionid=3'));                  
 }
 
