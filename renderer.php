@@ -118,12 +118,12 @@ class mod_responsim_renderer extends plugin_renderer_base {
      */
     public function show_question( $questionid) {
         global $DB;
-        $counter=1;
+        // $counter=1;
         $question= $DB->get_record('question', ['id'=>$questionid]);
-        $answers= $DB->get_records('question_answers', ['question'=>$questionid]);
-        $simulation= $DB->get_record('responsim_simulations',['id'=> '1']);
-        $simulation_data= $DB->get_records('responsim_simulation_data',['simulation'=> '1']);
-        $question_data=$DB->get_record('responsim_simulation_data',['simulation'=> '1','question'=>$questionid]);
+        // $answers= $DB->get_records('question_answers', ['question'=>$questionid]);
+        // $simulation= $DB->get_record('responsim_simulations',['id'=> '1']);
+        // $simulation_data= $DB->get_records('responsim_simulation_data',['simulation'=> '1']);
+        // $question_data=$DB->get_record('responsim_simulation_data',['simulation'=> '1','question'=>$questionid]);
         
         $output = $this->output->box($question->questiontext);
         $output .= $this->output->box_start('center');

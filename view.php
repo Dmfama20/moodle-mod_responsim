@@ -79,23 +79,30 @@ if( $simulationid !=0 && $questionid     !=0 ) {
 
 //Add a fake block which is displaying some addtional data
 responsim_add_fake_blocks($PAGE,$cm);
+if($currentquestion->end_question)     {
+    $url_next_question= new moodle_url('/mod/responsim/view.php',
+    array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>'10452'));
+}
 
-$url_next_question= new moodle_url('/mod/responsim/view.php',
+
+else    {
+    $url_next_question= new moodle_url('/mod/responsim/view.php',
 array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->next_question));
-// echo $OUTPUT->show_question($questionid);
-$mform = new responsim_show_question_form($url_next_question, array('questionid'=>$questionid));
+
+}
+
+$answers = $DB->get_records('question_answers', ['question' => $questionid ] );
+$mform = new responsim_show_question_form($url_next_question, array('questionid'=>$questionid, 'answers'=> $answers));
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
+   $idlastentry= responsim_track_data($data);
+
+    // throw new invalid_parameter_exception("gamesession " . $lastentry );
+    responsim_apply_rules($idlastentry);
     $url_next_question=new moodle_url('/mod/responsim/view.php',
     array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->question));
     redirect($url_next_question);
 
-}
-
-else {
-   
-
-    
 }
 
 

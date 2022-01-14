@@ -64,38 +64,72 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-echo $OUTPUT ->header( );
 
 
-$mform = new responsim_questions_form_edit(null, array('questionid'=>$questionid ));
-//display the form
-$mform->display();
+$question= $DB->get_record('question', ['id' =>$questionid ]);
+$answers= $DB->get_records('question_answers', ['question' =>$questionid  ]);
+$numans= count($answers);
+
+
+
+
+$mform = new responsim_questions_form_edit(null, array('question'=>$question ,'answers'=>$answers, 'numans'=>$numans ));
+
 
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
-  
-    $insert_params = ['question' =>  $data->qid, 'tag' => $data->questiontag];
-    $DB->insert_record('responsim_questions',$insert_params );   
     
+    if(strlen($data->questiontag)>0)  {
+        // Check if record already erxists
+        $check = $DB->record_exists('responsim_questions',['question'=>$data->qid ]);
+        if($check)  {
+            $rec= $DB->get_record('responsim_questions',['question'=>$data->qid ]);
+            $update_params = ['id'=>$rec->id,'question' =>  $data->qid, 'tag' => $data->questiontag];
+            $DB->update_record('responsim_questions',$update_params ); 
+        }
+        else{
+
+         $insert_params = ['question' =>  $data->qid, 'tag' => $data->questiontag];
+            $DB->insert_record('responsim_questions',$insert_params ); 
+
+        }
+
+
+    } 
     $answers  = $DB->get_records('question_answers', ['question' => $data->qid ] ); 
     
-    foreach($answers as $ans)   {
     
-     $insert_params = ['answer' => $ans->id, 'tag' => $data->ans];
-    $DB->insert_record('responsim_answers',$insert_params );   
-    
-    }
-    
-    
-    // redirect(new moodle_url('mod/responsim/edit_questions.php?id=570&questionid=3'));                  
+    $counter=1;
+     
+    for($i = 1; $i <= 4;$i++)   {
+        if(strlen($data->$i)>0) {
+            // Check if record already exists
+            $check = $DB->record_exists('responsim_answers',['answer'=>$data->{"hidden_".$i} ]);
+            if($check)  {
+                $rec=$DB->get_record('responsim_answers',['answer'=>$data->{"hidden_".$i} ]);
+                $update_params = ['id'=>$rec->id,'answer' =>  $data->{"hidden_".$i}, 'tag' => $data->$i];
+                $DB->update_record('responsim_answers',$update_params ); 
+            }
+
+            else{
+                $insert_params = ['answer' => $data->{"hidden_".$i}, 'tag' => $data->$i];
+                $DB->insert_record('responsim_answers',$insert_params );   
+            }
+
+           
+        }
+        
+
+     }
+
+     redirect(new moodle_url('/mod/responsim/questions.php', array('id'=>$cm->id)));
+                
 }
 
-else    {
+echo $OUTPUT ->header( );
 
-
-
-  
-    }
+    //display the form
+$mform->display();
 
 
 echo $OUTPUT->footer();

@@ -391,6 +391,71 @@ function responsim_add_question($questionname, $questiontext) {
     return $id;
 }
 
+
+
+/**
+ * Saves answers given by the students
+ *
+ *
+ * @return $id of the clicked answer
+ * @throws dml_exception
+ */
+function responsim_track_data($data) {
+    global $DB,$USER;
+        $answers = $DB->get_records('question_answers', ['question' => $data->qid]);
+        $numans = count($answers);
+        $questionorder='';
+        $i=1;
+        foreach($answers as $ans)   {
+            $questionorder.=$ans->id;
+            if(++$i <=  $numans) {
+                $questionorder.=',';
+            }
+        }
+        $arrquest= explode(',', $questionorder);
+        // insert into db
+        $add_params = ['gamesession'=>'1', 'mdl_user'=> $USER->id, 'question'=> $data->qid,'answer'=> $arrquest[$data->answer -1], 'answerordering'=>$questionorder];
+         $DB->insert_record('responsim_answertracking', $add_params);
+
+        $id =$arrquest[$data->answer -1];
+
+        
+    return  $id;
+}
+
+/**
+ * Saves answers given by the students
+ *
+ *
+ * @return $id if the datta is stored correctly
+ * @throws dml_exception
+ */
+function responsim_apply_rules($entry) {
+    global $DB;
+        $tag = $DB->get_record('responsim_answers',['answer' => $entry]);
+        //    throw new invalid_parameter_exception("tag= " . $tag->tag );
+       
+        if($tag->tag=='gut')    {
+            $var=$DB->get_record('responsim_variable_values',  ['variable' => '1']);
+            echo var_dump($var);
+            $varvalue=($var->variable_value)*2;
+            $id=$DB->update_record('responsim_variable_values', ['id'=>'1','variable' => '1', 'variable_value'=>$varvalue]);
+
+        }
+
+        else    {
+
+            $var=$DB->get_record('responsim_variable_values',  ['variable' => '1']);
+            $varvalue=($var->variable_value)/2;
+            $id=$DB->update_record('responsim_variable_values', ['id'=>'1','variable' => '1', 'variable_value'=>$varvalue]);
+
+
+
+        }
+
+    return $id ;
+}
+
 /**
  * Saves a new answer into the database
  *
@@ -568,9 +633,9 @@ foreach($formdata->selectcategories as $cat)    {
    
 foreach ($records_questions as $question) {
         $data = array();
-        $url = new moodle_url('/question/question.php', array(
-            'courseid'     => $PAGE->course->id,
-            'id'=> $question->id
+        $url = new moodle_url('/mod/responsim/edit_question.php', array(
+            'id'=> $PAGE->cm->id,
+            'questionid' =>$question->id
         ));
         $data[] = html_writer::link($url, $question->name);
         $data[] = $question->id;

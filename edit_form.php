@@ -145,12 +145,18 @@ class responsim_show_question_form extends moodleform {
             $mform->addElement('hidden', $name, $value);
             $mform->setType($name, PARAM_RAW);
         }
-        $answers= $DB->get_records('question_answers',['question' =>  $this->_customdata['questionid']]);
+
+        $mform->addElement('hidden', 'qid',  $this->_customdata['questionid']);
+        $mform->setType('qid', PARAM_RAW);
+
         $radioarray=array();
         $alignment=array();
-        foreach($answers as $answer)    {
-            $radioarray[] = $mform->createElement('radio', 'question', '', $answer->answer, $answer->id );
+        reset($this->_customdata['answers']);
+        for($i = 1; $i <= 4;$i++)    {
+            $radioarray[] = $mform->createElement('radio', 'answer', '', current($this->_customdata['answers'])->answer, 
+            $i);
             $alignment[]='<br/>';
+            next($this->_customdata['answers']);
         }
         $mform->addGroup($radioarray, 'radioar', '', $alignment, false);
          
@@ -254,32 +260,59 @@ class responsim_questions_form_edit extends moodleform {
         }
         $mform->addElement('static', '', '', "Frage:");
         $attr_question_name=array('size'=>'30');
-        //  echo var_dump( $this->_customdata['questionid']);
-        
-        $questionid = $this->_customdata['questionid'];
+      
 
-        $question= $DB->get_record('question', ['id' =>$this->_customdata['questionid'] ]);
-        $answers= $DB->get_records('question_answers', ['question' =>$this->_customdata['questionid'] ]);
-        
-        $mform->addElement('hidden', 'qid',   $questionid );
-        $mform->setType('qid', PARAM_INT);
 
+        $mform->addElement('hidden', 'qid',   $this->_customdata['question']->id  );
+        $mform->setType('qid', PARAM_INT);    
+       
         
-     $mform->addElement('static', '', '', $question->questiontext);
-      $mform->addElement('text', 'questiontag', "Frage-Tag", $attr_question_name);
-        $mform->setType('questiontag', PARAM_RAW);
-       $mform->addElement('static', '', '', "Antworten:");
-     foreach($answers as $ans)  {
-     $mform->addElement('static', '', '',  $ans->answer);
-        $mform->addElement('text', $ans->id, $ans->id, $attr_question_name);
-        $mform->setType($ans->id, PARAM_RAW);
-     
-     }
-     
-     
-     
-     
+        reset( $this->_customdata['answers']);
+         for($i = 1; $i <= 4;$i++)  {
+            $mform->addElement('hidden',"hidden_".$i,   current($this->_customdata['answers'])->id  );
+            $mform->setType('hidden_'.$i , PARAM_INT);
+            next( $this->_customdata['answers']);
+        
+         }
+
+            $mform->addElement('static', '', '',$this->_customdata['question']->questiontext);
+
+            $check = $DB->record_exists('responsim_questions',['question' => $this->_customdata['question']->id]);
+            if($check)  {
+                $val= $DB->get_record('responsim_questions',['question' => $this->_customdata['question']->id]);
+                $mform->addElement('text', 'questiontag', "Frage-Tag", $attr_question_name)->setValue($val->tag);
+                $mform->setType('questiontag', PARAM_RAW);
+
+            }
+
+            else{
+                $mform->addElement('text', 'questiontag', "Frage-Tag", $attr_question_name);
+                $mform->setType('questiontag', PARAM_RAW);
+
+            }
+
+
+            reset( $this->_customdata['answers']);
     
+            for($i = 1; $i <= 4;$i++)  {
+
+                $mform->addElement('static', '', '',  current( $this->_customdata['answers'])->answer);
+                $check = $DB->record_exists('responsim_answers',['answer' => current( $this->_customdata['answers'])->id ]);
+                if($check)  {
+                    $val=$DB->get_record('responsim_answers',['answer' => current( $this->_customdata['answers'])->id]);
+                    $mform->addElement('text', $i, current( $this->_customdata['answers'])->id, $attr_question_name)->setValue($val->tag);
+                    $mform->setType( $i, PARAM_RAW);
+                }
+                else{
+                    $mform->addElement('text', $i, current( $this->_customdata['answers'])->id, $attr_question_name);
+                    $mform->setType( $i, PARAM_RAW);
+                }
+                next( $this->_customdata['answers']);
+
+             }
+
+
+
         $this->add_action_buttons($cancel = true, $submitlabel='OK');
     
     }

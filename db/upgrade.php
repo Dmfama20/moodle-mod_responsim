@@ -114,24 +114,24 @@ function xmldb_responsim_upgrade($oldversion) {
     
         if ($oldversion < 2021120700) {
 
-               // Define table responsim_answertracking to be created.
-               $table = new xmldb_table('responsim_answertracking');
+              // Define table responsim_answertracking to be created.
+        $table = new xmldb_table('responsim_answertracking');
 
-               // Adding fields to table responsim_answertracking.
-               $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
-               $table->add_field('gamesession', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
-               $table->add_field('mdl_user', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
-               $table->add_field('question', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
-               $table->add_field('answer', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
-               $table->add_field('answer_correct', XMLDB_TYPE_INTEGER, '1', null, XMLDB_NOTNULL, null, null);
-       
-               // Adding keys to table responsim_answertracking.
-               $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
-       
-               // Conditionally launch create table for responsim_answertracking.
-               if (!$dbman->table_exists($table)) {
-                   $dbman->create_table($table);
-               }
+        // Adding fields to table responsim_answertracking.
+        $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+        $table->add_field('gamesession', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('mdl_user', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('question', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('answer', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+        $table->add_field('answerordering', XMLDB_TYPE_TEXT, null, null, XMLDB_NOTNULL, null, null);
+
+        // Adding keys to table responsim_answertracking.
+        $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+        // Conditionally launch create table for responsim_answertracking.
+        if (!$dbman->table_exists($table)) {
+            $dbman->create_table($table);
+        }
 
         // Responsim savepoint reached.
         upgrade_mod_savepoint(true, 2021120700, 'responsim');
