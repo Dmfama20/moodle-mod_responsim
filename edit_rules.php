@@ -27,6 +27,8 @@ require_once(__DIR__.'/edit_form.php');
 
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
+// ID of the simulation.
+$simulationid = optional_param('simulationid',0,  PARAM_INT);
 
 // Activity instance id.
 $r = optional_param('r', 0, PARAM_INT);
@@ -55,28 +57,44 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/rules.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/responsim/edit_rules.php', array('id' => $cm->id,'simulationid'=>$simulationid));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-//Add a fake block which is displaying some addtional data
-// responsim_add_fake_blocks($PAGE,$cm);
+
+
+
+$simulation = $DB->get_record('responsim_simulations',['id'=>$simulationid]); 
+
+$addurl=new moodle_url('/mod/responsim/add_rule.php',array('id' => $cm->id,'simulationid'=>$simulationid,
+'categoryid'=>'0', 'questionid'=>'0','answerid'=>'0','variableid'=>'0'));
+$mform = new responsim_edit_rules_form(null, array('simulationid'=>$simulationid ));
+
+if ($mform->is_cancelled())     {
+
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responsim/view.php', $currentparams));  
+}
+// $mform->set_data((object)$currentparams);
+if($data = $mform->get_data()) {
+
+redirect($addurl);
+
+}
+
+
+
+
 
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
 $currenttab = 'rules';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
+echo $OUTPUT->heading($simulation->name." bearbeiten:",4);
+$mform->display();
 
-
-$table=list_all_simulations_rules();
-   
-echo html_writer::table($table);
-
-
-
-
-
-
+$table=list_all_rules($data );
+echo html_writer::table($table);   
 
 echo $OUTPUT->footer();

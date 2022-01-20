@@ -22,6 +22,8 @@
  * @license     https://www.gnu.org/copyleft/gpl.html GNU GPL v3 or later
  */
 
+require_once($CFG->libdir . '/questionlib.php');
+
 defined('MOODLE_INTERNAL') || die();
 
 /**
@@ -432,26 +434,53 @@ function responsim_track_data($data) {
  */
 function responsim_apply_rules($entry) {
     global $DB;
-        $tag = $DB->get_record('responsim_answers',['answer' => $entry]);
-        //    throw new invalid_parameter_exception("tag= " . $tag->tag );
-       
-        if($tag->tag=='gut')    {
-            $var=$DB->get_record('responsim_variable_values',  ['variable' => '1']);
-            echo var_dump($var);
-            $varvalue=($var->variable_value)*2;
-            $id=$DB->update_record('responsim_variable_values', ['id'=>'1','variable' => '1', 'variable_value'=>$varvalue]);
+        
+        $rec=$DB->get_records('responsim_laws',['answer'=>$entry]);
 
+        foreach($rec as $r) {
+            $var=$DB->get_record('responsim_variable_values',['variable'=>$r->variable]);
+
+            $val=$var->variable_value;
+            
+            $valchange=$r->variable_change;
+            $newstr=str_replace('{var}', '',$valchange);
+            $op= substr($newstr,0,1);
+            switch ($op) {
+                case '/':
+                    $lentgth = strlen($newstr)-1;
+                    $lentgth=$lentgth*(-1);
+                    $num=substr($newstr,$lentgth);
+                    $val=$val/$num;
+                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    break;
+                case '*':
+                    $lentgth = strlen($newstr)-1;
+                    $lentgth=$lentgth*(-1);
+                    $num=substr($newstr,$lentgth);
+                    $val=$val*$num;
+                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    break;
+                case '+':
+                    $lentgth = strlen($newstr)-1;
+                    $lentgth=$lentgth*(-1);
+                    $num=substr($newstr,$lentgth);
+                    $val=$val+$num;
+                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    break;
+                case '-':
+                    $lentgth = strlen($newstr)-1;
+                    $lentgth=$lentgth*(-1);
+                    $num=substr($newstr,$lentgth);
+                    $val=$val-$num;
+                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    break;
+            }
+            
+
+
+            
         }
 
-        else    {
-
-            $var=$DB->get_record('responsim_variable_values',  ['variable' => '1']);
-            $varvalue=($var->variable_value)/2;
-            $id=$DB->update_record('responsim_variable_values', ['id'=>'1','variable' => '1', 'variable_value'=>$varvalue]);
-
-
-
-        }
 
     return $id ;
 }
@@ -496,6 +525,42 @@ function responsim_add_simulation($simname) {
 }
 
 
+/**
+ * Returns a list of all current questions
+ *
+ * @return array table of variables
+ */
+function list_all_questions($formdata) {
+    global $DB, $PAGE;
+   //Standard values without submitting the form
+//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+//    $numactivies = count($activities);
+   
+   $table = new html_table();
+   
+   $table->head = array( 'Frage' , 'ID');
+   
+   
+foreach($formdata->selectcategories as $cat)    {
+
+   $getquestionss_config=  ['category' => $cat];   
+   $records_questions = $DB->get_records('question',$getquestionss_config);
+   
+foreach ($records_questions as $question) {
+        $data = array();
+        $url = new moodle_url('/mod/responsim/edit_question.php', array(
+            'id'=> $PAGE->cm->id,
+            'questionid' =>$question->id
+        ));
+        $data[] = html_writer::link($url, $question->name);
+        $data[] = $question->id;
+        $table->data[] = $data;
+    }
+
+}
+
+  return $table;
+}
 
 
 /**
@@ -615,34 +680,29 @@ function list_all_variables($editable=false) {
  *
  * @return array table of variables
  */
-function list_all_questions($formdata) {
+function list_all_rules() {
     global $DB, $PAGE;
    //Standard values without submitting the form
 //    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
 //    $numactivies = count($activities);
    
    $table = new html_table();
+   $rec= $DB->get_records('responsim_laws');   
+   $table->head = array( 'Frage','Antwort','Variable','Variablenänderung');
    
-   $table->head = array( 'Frage' , 'ID');
-   
-   
-foreach($formdata->selectcategories as $cat)    {
+//    $data[] = html_writer::link($url, $sim->name);
 
-   $getquestionss_config=  ['category' => $cat];   
-   $records_questions = $DB->get_records('question',$getquestionss_config);
-   
-foreach ($records_questions as $question) {
+    foreach($rec as $val)   {
         $data = array();
-        $url = new moodle_url('/mod/responsim/edit_question.php', array(
-            'id'=> $PAGE->cm->id,
-            'questionid' =>$question->id
-        ));
-        $data[] = html_writer::link($url, $question->name);
-        $data[] = $question->id;
+        $data[] = $val->question;
+        $data[] = $val->answer;
+        $data[] = $val-> variable;
+        $data[] = $val->variable_change;
         $table->data[] = $data;
     }
-
-}
+   
+   
+   
 
   return $table;
 }
@@ -672,6 +732,20 @@ foreach ($records_answers as $answer) {
     }
 
   return $table;
+}
+
+
+/**
+ * Saves a rule to the db
+ * *
+ * @return int ID the db entry
+ */
+function add_rule($formdata, $simulation) {
+    global $DB;
+    $id=$DB->insert_record('responsim_laws',['gamesession'=>'1','simulation' =>$simulation, 'question'=> $formdata->selectquestion,
+    'answer'=>$formdata->selectanswer, 'variable'=>$formdata->selectvariable, 'variable_change'=>$formdata->varchange]);
+    return $id;
+ 
 }
 
 
@@ -714,6 +788,43 @@ function list_all_simulations() {
 
   return $table;
 }
+
+
+/**
+ * Returns a list of all current simulations
+ *
+ * @return array table of simulations
+ */
+function list_all_simulations_rules() {
+    global $DB, $PAGE;
+   //Standard values without submitting the form
+
+//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+//    $numactivies = count($activities);
+   
+   $table = new html_table();
+   $table->align[1] = 'right';
+  
+   $table->head = array( 'Simulation' );
+   
+  
+   $records_sims = $DB->get_records('responsim_simulations');
+   
+    foreach ($records_sims as $sim) {
+        $data = array();
+        $url = new moodle_url('/mod/responsim/edit_rules.php', array(
+            'id'     => $PAGE->cm->id,
+            'simulationid'=> $sim->id
+        ));
+      
+        $data[] = html_writer::link($url, $sim->name);
+
+        $table->data[] = $data;
+    }
+
+  return $table;
+}
+
 
 
 
@@ -773,6 +884,7 @@ function list_all_simulations_and_start() {
         
         $modinfo = get_fast_modinfo($courseID);
         $coursemodule = $modinfo->get_cm($coursemoduleid);
+        // echo var_dump($coursemodule->context);
         $ctx = $coursemodule->context;
 
         // load categories

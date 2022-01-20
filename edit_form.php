@@ -94,7 +94,6 @@ class responsim_variable_form_edit extends moodleform {
     // }
 }
 
-
 class responsim_simulation_edit_form extends moodleform {
     //Add elements to form
     public function definition() {
@@ -124,6 +123,145 @@ class responsim_simulation_edit_form extends moodleform {
 
          
         $this->add_action_buttons($cancel = true, $submitlabel='Speichern!');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
+
+
+
+class responsim_edit_rules_form extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $DB;
+       
+        $mform = $this->_form; // Don't forget the underscore! 
+        foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        }
+
+        
+
+         
+        $this->add_action_buttons($cancel = false, $submitlabel='Neue Regel anlegen');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
+
+class responsim_add_rule_form extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $DB, $CFG;
+    $categories= get_mdl_categories($this->_customdata['cmid'], $this->_customdata['courseid']);
+       
+    $mform = $this->_form; // Don't forget the underscore! 
+    foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        }
+    
+
+    $mform->addElement('advcheckbox', 'bulkupload', 'Bulk Upload', 'use CSV-file');
+    $mform->setDefault('bulkupload', 0);
+   
+    $maxbytes = $CFG->maxbytes;
+
+    $mform->addElement('filepicker', 'csvfile', 'upload your CSV-file', null,
+                   array('maxbytes' => $maxbytes, 'accepted_types' => '*'));
+    $mform->hideif('csvfile', 'bulkupload', 'eq', '0');
+
+    // Selected category 
+    $categorytoinclude = array();
+    foreach ($categories as $index => $category) {
+            
+            $categorytoinclude[$category['id']] = $category['name'];
+            
+        }
+     $categoryid= $this->_customdata['categoryid'];
+    if($categoryid>0) {
+        $mform->addElement('select', 'selectcategory', 'select categories', $categorytoinclude)->setSelected($categoryid); 
+    }
+    else{
+        $mform->addElement('select', 'selectcategory', 'select categories', $categorytoinclude);
+    }
+    $mform->hideif('selectcategory', 'bulkupload', 'eq', '1');
+      
+
+    $getquestions_config=  ['category' => $categoryid];   
+    $questions = $DB->get_records('question',$getquestions_config);
+
+    $questiontoinclude=array();
+    
+    foreach ($questions as $qu) {
+        $questiontoinclude[$qu->id]=$qu->questiontext;
+         }
+    $questionid= $this->_customdata['questionid'];
+    if($questionid) {
+        $mform->addElement('select', 'selectquestion', 'select question', $questiontoinclude)->setSelected($questionid);
+    }
+    else{
+        $mform->addElement('select', 'selectquestion', 'select question', $questiontoinclude);
+    }
+    $mform->hideif('selectquestion', 'bulkupload', 'eq', '1');
+
+
+    $getanswers_config=  ['question' => $questionid];   
+    $answers = $DB->get_records('question_answers',$getanswers_config);
+
+    $answerstoinclude=array();
+    
+    foreach ($answers as $ans) {
+        $answerstoinclude[$ans->id]=$ans->answer;
+         }
+    $answerid= $this->_customdata['answerid'];
+    if($questionid) {
+        $mform->addElement('select', 'selectanswer', 'select anser', $answerstoinclude)->setSelected($answerid);
+    }
+    else{
+        $mform->addElement('select', 'selectanswer', 'select answer', $answerstoinclude);
+    }
+    $mform->hideif('selectanswer', 'bulkupload', 'eq', '1');
+    
+
+
+      
+    $vars = $DB->get_records('responsim_variables');
+
+    $varstoinclude=array();
+    
+    foreach ($vars as $var) {
+        $varstoinclude[$var->id]=$var->variable;
+         }
+    $varid= $this->_customdata['variableid'];
+    if($varid) {
+        $mform->addElement('select', 'selectvariable', 'select variable', $varstoinclude)->setSelected($varid);
+    }
+    else{
+        $mform->addElement('select', 'selectvariable', 'select variable', $varstoinclude);
+        
+    }
+    $mform->hideif('selectvariable', 'bulkupload', 'eq', '1');
+
+    $mform->addElement('text', 'varchange', "Variablen-Änderung", ['size'=>'40']);
+    $mform->setType('varchange', PARAM_RAW);
+    $mform->hideif('varchange', 'bulkupload', 'eq', '1');
+
+
+
+   
+
+
+
+        
+    $this->add_action_buttons($cancel = true, $submitlabel='OK!');
     
     }
     // //Custom validation should be added here
