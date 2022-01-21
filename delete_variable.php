@@ -15,7 +15,7 @@
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
- * Prints an instance of responsim.
+ * edits an instance of responsim.
  *
  * @package     responsim
  * @copyright   2021 Your Name <you@example.com>
@@ -28,11 +28,10 @@ require_once(__DIR__.'/edit_form.php');
 
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
+$variableid = optional_param('variableid', 0, PARAM_INT);
 
-// question id.
-$variableid = optional_param('variableid',0, PARAM_INT);
-
-
+// Activity instance id.
+$r = optional_param('r', 0, PARAM_INT);
 
 if ($id) {
     $cm = get_coursemodule_from_id('responsim', $id, 0, false, MUST_EXIST);
@@ -58,37 +57,49 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/edit_variable.php', array('id' => $cm->id, 'variableid'=>$variableid));
+$PAGE->set_url('/mod/responsim/variables.php', array('id' => $cm->id,'variableid'=>$variableid));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
 
 
-$mform = new responsim_variable_form_edit(null, array('variableid'=>$variableid ));
-//display the form
 
+$mform = new responsim_delete_variable_form(null);
 
+if ($mform->is_cancelled())     {
+
+    
+
+    $currentparams = ['id' => $cm->id];
+    redirect(new moodle_url('/mod/responsim/variables.php', $currentparams));  
+}
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
-  
-  
-    $update_params = ['id' => $variableid, 'variable' => $data->varname];
-    $DB->update_record('responsim_variables',$update_params );   
-    $update_params = ['id'=>$data->valid, 'variable' => $variableid, 'variable_value' => $data->varvalue];
-    $DB->update_record('responsim_variable_values',$update_params ); 
+    $DB->delete_records('responsim_variables',['id'=> $variableid]);
     $currentparams = ['id' => $cm->id];
-    redirect(new moodle_url('/mod/responsim/variables.php', $currentparams));                     
+    redirect(new moodle_url('/mod/responsim/variables.php', $currentparams)); 
+
+
 }
 
 else    {
 
+}
+
+$OUTPUT = $PAGE->get_renderer('mod_responsim');
+$currenttab='variables';
+echo $OUTPUT->header( $cm, $currenttab, false, null, "TEst");
+
+echo $OUTPUT ->heading('Variable löschen?',2);
+echo $OUTPUT ->heading('Bitte stellen Sie sicher, dass Sie zuvor alle zugehörigen Regel gelöscht haben!',5);
 
 
-  
-    }
 
-    echo $OUTPUT ->header( );
 
-    $mform->display();
+
+$mform->display();
+
+
+
 echo $OUTPUT->footer();

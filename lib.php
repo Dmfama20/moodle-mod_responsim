@@ -700,7 +700,7 @@ function list_all_variables($editable=false) {
    $table = new html_table();
    if($editable) 
    {
-   $table->head = array( 'Variable' , 'Wert', 'bearbeiten');
+   $table->head = array( 'Variable' , 'Wert', 'Variable löschen?');
    }
    else {
    $table->head = array( 'Variable' , 'Wert');
@@ -719,8 +719,11 @@ function list_all_variables($editable=false) {
         $data[] = html_writer::link($url, $var->variable);
         // $data[] = html_writer::link($url, format_string($page->title, true), array('id' => 'lesson-' . $page->id));
         $data[] = $record_value ->variable_value;
-
-        $data[] = "hide/delete";
+        $delurl = new moodle_url('/mod/responsim/delete_variable.php', array(
+            'id'     => $PAGE->cm->id,
+            'variableid'=> $var->id
+        ));
+        $data[] = html_writer::link($delurl, 'löschen');
         $table->data[] = $data;
 
     }

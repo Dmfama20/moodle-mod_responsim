@@ -85,6 +85,9 @@ class responsim_variable_form_edit extends moodleform {
           $attr_var_value=array('size'=>'20');
         $mform->addElement('text', 'varvalue', "Variablen-Wert", $attr_var_value)->setValue($variable_value->variable_value);
          $mform->setType('varvalue', PARAM_TEXT);
+
+         $mform->addElement('hidden', 'valid', $variable_value->id);
+        $mform->setType('valid', PARAM_INT);
         $this->add_action_buttons($cancel = true, $submitlabel='Speichern!');
     
     }
@@ -378,6 +381,26 @@ class responsim_delete_rule_form extends moodleform {
         }
         
         $this->add_action_buttons($cancel = true, $submitlabel='Regel löschen!');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
+
+class responsim_delete_variable_form extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $CFG;
+       
+        $mform = $this->_form; // Don't forget the underscore! 
+        foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        }
+        
+        $this->add_action_buttons($cancel = true, $submitlabel='Variable löschen!');
     
     }
     // //Custom validation should be added here
