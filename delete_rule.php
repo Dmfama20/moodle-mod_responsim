@@ -13,7 +13,6 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-
 /**
  * Prints an instance of responsim.
  *
@@ -31,13 +30,9 @@ $id = optional_param('id', 0, PARAM_INT);
 
 // Activity instance id.
 $r = optional_param('r', 0, PARAM_INT);
-
-// question-id.
-$questionid = optional_param('questionid', 0, PARAM_INT);
-
-// simulation-id.
+$lawid = optional_param('lawid', 0, PARAM_INT);
 $simulationid = optional_param('simulationid', 0, PARAM_INT);
-$lastpage    = optional_param('lastpage', -1, PARAM_BOOL);
+
 
 if ($id) {
     $cm = get_coursemodule_from_id('responsim', $id, 0, false, MUST_EXIST);
@@ -63,79 +58,52 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/responsim/delete_rule.php', array('id' => $cm->id,'simulationid'=>$simulationid,'lawid'=>$lawid));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-
-if( $simulationid !=0 && $questionid     !=0 ) {
-
-    $simulation=$DB->get_record('responsim_simulations',['id'=>$simulationid]);
-    $simulation_data=$DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
-    $questiondata = $DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
-    $currentquestion=  $DB->get_record('responsim_simulation_data',['simulation'=>$simulationid, 'question'=>$questionid]);
-
-
-
 //Add a fake block which is displaying some addtional data
-responsim_add_fake_blocks($PAGE,$cm);
-if($currentquestion->end_question)     {
-    // Last question
+// responsim_add_fake_blocks($PAGE,$cm);
 
-    // TODO: DIRTY->Questionid
-    $url_next_question= new moodle_url('/mod/responsim/view.php',
-    array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>TRUE));
+
+$mform = new responsim_delete_rule_form(null);
+
+if ($mform->is_cancelled())     {
+
+    
+
+    $currentparams = ['id' => $cm->id,'simulationid'=>$simulationid];
+    redirect(new moodle_url('/mod/responsim/edit_rules.php', $currentparams));  
 }
-
-
-else    {
-    $url_next_question= new moodle_url('/mod/responsim/view.php',
-array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->next_question));
-
-}
-
-$answers = $DB->get_records('question_answers', ['question' => $questionid ] );
-$mform = new responsim_show_question_form($url_next_question, array('questionid'=>$questionid, 'answers'=> $answers));
-
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
-   $idlastentry= responsim_track_data($data);
-
-    // throw new invalid_parameter_exception("gamesession " . $lastentry );
-    responsim_apply_rules($idlastentry);
-    $url_next_question=new moodle_url('/mod/responsim/view.php',
-    array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->question));
-    redirect($url_next_question);
-
-}
-
-
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'view';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
-echo $OUTPUT->show_question($questionid);
-$mform->display();
-echo $OUTPUT->footer();
-
-
+    $DB->delete_records('responsim_laws',['id'=> $lawid]);
+    $currentparams = ['id' => $cm->id,'simulationid'=>$simulationid];
+    redirect(new moodle_url('/mod/responsim/edit_rules.php', $currentparams));
 
 
 }
-
-
-
-
 
 else    {
 
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'view';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
-$table=list_all_simulations_and_start();
-echo html_writer::table($table);
-echo $OUTPUT->footer();
-
 }
 
+$OUTPUT = $PAGE->get_renderer('mod_responsim');
+$currenttab = 'rules';
+echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+echo $OUTPUT ->heading('Regel löschen?',2);
 
+
+
+
+
+$mform->display();
+
+
+
+
+
+
+
+echo $OUTPUT->footer();

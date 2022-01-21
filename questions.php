@@ -28,6 +28,7 @@ require_once(__DIR__.'/edit_form.php');
 
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
+$categoryid = optional_param('categoryid', 0, PARAM_INT);
 
 // Activity instance id.
 $r = optional_param('r', 0, PARAM_INT);
@@ -56,7 +57,7 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id, 'categoryid'=>$categoryid));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
@@ -64,9 +65,7 @@ $PAGE->set_context($modulecontext);
 //Add a fake block which is displaying some addtional data
 // responsim_add_fake_blocks($PAGE,$cm);
 
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'questions';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+
 
 // $url_add_question = html_writer::link(new moodle_url('/mod/responsim/add_question.php', array('id' => $PAGE->cm->id ))
 // , "Frage erstellen", array('class' => 'btn btn-primary'));
@@ -74,24 +73,83 @@ echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 // echo $OUTPUT->add_button($url_add_question);
 
 
-$mform = new responsim_add_category_form(null, array('cmid'=>$cm->id, 'courseid'=>$course->id ));
-//display the form
-$mform->display();
+$mform = new questions_form(null, array('cmid'=>$cm->id, 'courseid'=>$course->id, 'categoryid'=>$categoryid ));
+
 
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
-  
-  
-    $table=list_all_questions($data );
+    // show questions as a html table
+    if($data->bulkdownload=='0')    {
 
-    echo html_writer::table($table);                    
+        
+        $table=list_all_questions($data );
+
+        // echo html_writer::table($table);                    
 }
+// Use Bulk download of questions
+    else    {   
+
+        if(!empty($data->selectcategories[0]))  {
+            $rdurl=new moodle_url('/mod/responsim/questions.php',array('id' => $cm->id, 'categoryid'=>$data->selectcategories[0]));
+    
+            
+     
+           
+         }
+         if(!empty($data->selectquestions))     {
+
+            $bulk_questions = array();
+           $counter=0;
+            foreach($data->selectquestions as $qu)   {
+                $question=$DB->get_record('question',['id'=>$qu]);
+                $answers= $DB->get_records('question_answers',['question'=>$qu]);
+                foreach($answers as $ans)   {
+                    foreach($data->selectvariables as $var)   {
+                        $variable=$DB->get_record('responsim_variables',['id'=>$var]);
+                        $bulk_questions[$counter]= array($qu, $question->questiontext,$ans->id,$ans->answer, 
+                        $var,$variable->variable);
+                        $counter++;
+
+
+                    }    
+
+                }
+           
+            }
+
+             
+
+            download_send_headers("data_export_" . date("Y-m-d") . ".csv");
+            echo array2csv($bulk_questions);
+            die();
+         }
+
+      
+
+         redirect($rdurl); 
+    }
+
+    
+
+    }
+    
 
 else    {
 
     
   
     }
+
+
+    $OUTPUT = $PAGE->get_renderer('mod_responsim');
+$currenttab = 'questions';
+echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+//display the form
+$mform->display();
+
+if(isset($table))  {
+    echo html_writer::table($table); 
+}
 
 
 

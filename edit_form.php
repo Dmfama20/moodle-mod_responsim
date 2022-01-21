@@ -178,6 +178,15 @@ class responsim_add_rule_form extends moodleform {
                    array('maxbytes' => $maxbytes, 'accepted_types' => '*'));
     $mform->hideif('csvfile', 'bulkupload', 'eq', '0');
 
+    $options = array(
+        'comma' => ',',
+        'semicolon' => ';'
+    );
+    $select = $mform->addElement('select', 'delimiter', 'CSV delimiter', $options);
+    // This will select the colour blue.
+    $select->setSelected('comma');
+    $mform->hideif('delimiter', 'bulkupload', 'eq', '0');
+
     // Selected category 
     $categorytoinclude = array();
     foreach ($categories as $index => $category) {
@@ -291,7 +300,8 @@ class responsim_show_question_form extends moodleform {
         $alignment=array();
         reset($this->_customdata['answers']);
         for($i = 1; $i <= 4;$i++)    {
-            $radioarray[] = $mform->createElement('radio', 'answer', '', current($this->_customdata['answers'])->answer, 
+            $radioarray[] = $mform->createElement('radio', 'answer', '', 
+            clean_param(current($this->_customdata['answers'])->answer, PARAM_TEXT), 
             $i);
             $alignment[]='<br/>';
             next($this->_customdata['answers']);
@@ -348,6 +358,26 @@ class responsim_simulations_form_add extends moodleform {
         $mform->addElement('text', 'name', "Simulations-Name", $attr_simulation_name);
         $mform->setType('name', PARAM_TEXT);
         $this->add_action_buttons($cancel = false, $submitlabel='Anlegen!');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
+
+class responsim_delete_rule_form extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $CFG;
+       
+        $mform = $this->_form; // Don't forget the underscore! 
+        foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        }
+        
+        $this->add_action_buttons($cancel = true, $submitlabel='Regel löschen!');
     
     }
     // //Custom validation should be added here
@@ -461,7 +491,7 @@ class responsim_questions_form_edit extends moodleform {
 }
 
 
-class responsim_add_category_form extends moodleform {
+class questions_form extends moodleform {
     //Add elements to form
     public function definition() {
         global $PAGE, $DB;
@@ -472,10 +502,15 @@ class responsim_add_category_form extends moodleform {
             $mform->addElement('hidden', $name, $value);
             $mform->setType($name, PARAM_RAW);
         }
+
+        $mform->addElement('advcheckbox', 'bulkdownload', 'Bulk download', 'download CSV-file');
+        $mform->setDefault('bulkdownload', 1);
+
+
         $mform->addElement('static', '', '', "Kategorie wählen");
      
 
-        // Selected activities by the user
+        // Selected category
         $categorytoinclude = array();
         foreach ($categories as $index => $category) {
             
@@ -486,6 +521,33 @@ class responsim_add_category_form extends moodleform {
         $mform->getElement('selectcategories')->setMultiple(true);
         $mform->getElement('selectcategories')->setSize(count($categorytoinclude));    
         $mform->setAdvanced('selectcategories', true);    
+        // Select questions
+         $questionstoinclude = array();
+         $questions=$DB->get_records('question',['category'=> $this->_customdata['categoryid']]);
+         foreach ($questions as $qu) {
+             
+             $questionstoinclude[$qu->id] = $qu->name;
+             
+         }
+         $mform->addElement('select', 'selectquestions', 'select questions', $questionstoinclude);  
+         $mform->getElement('selectquestions')->setMultiple(true);
+         $mform->getElement('selectquestions')->setSize(count($questionstoinclude));    
+         $mform->setAdvanced('selectquestions', true);   
+
+         // Select variables
+         $variablestoinclude = array();
+         $variables=$DB->get_records('responsim_variables');
+         foreach ($variables as $var) {
+             
+             $variablestoinclude[$var->id] = $var->variable;
+             
+         }
+         $mform->addElement('select', 'selectvariables', 'select variables', $variablestoinclude);  
+         $mform->getElement('selectvariables')->setMultiple(true);
+         $mform->getElement('selectvariables')->setSize(count($variablestoinclude));    
+         $mform->setAdvanced('selectvariables', true);   
+
+
         $this->add_action_buttons($cancel = true, $submitlabel='OK');
     
     }

@@ -94,8 +94,12 @@ if($data = $mform->get_data()) {
     $cir = new csv_import_reader($importid, 'uploadlist');
 
     $filecontent = $mform->get_file_content('csvfile');
-
-    $readcount = $cir->load_csv_content($filecontent, null, 'comma');
+    if($data->delimiter=='comma')   {
+        $readcount = $cir->load_csv_content($filecontent, null, 'comma');
+    }
+    else    {
+        $readcount = $cir->load_csv_content($filecontent, null, 'semicolon');
+    }
 
     if (!$readcount) {
 
@@ -143,17 +147,16 @@ if($data = $mform->get_data()) {
         // echo var_dump('question: '.$ent['question']);
 
         // Save CSV-content to DB
-        // TODO: Add variable gamesession!
+        // TODO: modify gamesession!
         $data_config = ['gamesession'=>'1', 'simulation'=>$simulationid, 'question'=>$line['question'],
                         'answer'=>$line['answer'],'variable'=>$line['variable'], 'variable_change'=>$line['variable_change']];
        $DB->insert_record('responsim_laws',$data_config);
        $counter++;
     }
 
-    echo var_dump('entries added: '.$counter);
 
-
-
+$rdurl=new moodle_url('/mod/responsim/edit_rules.php',array('id' => $cm->id,'simulationid'=>$simulationid));
+redirect($rdurl);
 
   }
 

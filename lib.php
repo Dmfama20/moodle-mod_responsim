@@ -451,28 +451,28 @@ function responsim_apply_rules($entry) {
                     $lentgth=$lentgth*(-1);
                     $num=substr($newstr,$lentgth);
                     $val=$val/$num;
-                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    $id = $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
                     break;
                 case '*':
                     $lentgth = strlen($newstr)-1;
                     $lentgth=$lentgth*(-1);
                     $num=substr($newstr,$lentgth);
                     $val=$val*$num;
-                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    $id = $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
                     break;
                 case '+':
                     $lentgth = strlen($newstr)-1;
                     $lentgth=$lentgth*(-1);
                     $num=substr($newstr,$lentgth);
                     $val=$val+$num;
-                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
                     break;
                 case '-':
                     $lentgth = strlen($newstr)-1;
                     $lentgth=$lentgth*(-1);
                     $num=substr($newstr,$lentgth);
                     $val=$val-$num;
-                    $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                    $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
                     break;
             }
             
@@ -481,8 +481,7 @@ function responsim_apply_rules($entry) {
             
         }
 
-
-    return $id ;
+return 0 ;
 }
 
 /**
@@ -532,34 +531,95 @@ function responsim_add_simulation($simname) {
  */
 function list_all_questions($formdata) {
     global $DB, $PAGE;
-   //Standard values without submitting the form
-//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
-//    $numactivies = count($activities);
-   
-   $table = new html_table();
-   
-   $table->head = array( 'Frage' , 'ID');
-   
-   
-foreach($formdata->selectcategories as $cat)    {
 
-   $getquestionss_config=  ['category' => $cat];   
-   $records_questions = $DB->get_records('question',$getquestionss_config);
+        $table = new html_table();
    
-foreach ($records_questions as $question) {
-        $data = array();
-        $url = new moodle_url('/mod/responsim/edit_question.php', array(
-            'id'=> $PAGE->cm->id,
-            'questionid' =>$question->id
-        ));
-        $data[] = html_writer::link($url, $question->name);
-        $data[] = $question->id;
-        $table->data[] = $data;
-    }
+        $table->head = array( 'Frage' , 'ID');
+        
+        
+     foreach($formdata->selectcategories as $cat)    {
+     
+        $getquestionss_config=  ['category' => $cat];   
+        $records_questions = $DB->get_records('question',$getquestionss_config);
+        
+     foreach ($records_questions as $question) {
+             $data = array();
+             $url = new moodle_url('/mod/responsim/edit_question.php', array(
+                 'id'=> $PAGE->cm->id,
+                 'questionid' =>$question->id
+             ));
+             $data[] = html_writer::link($url, $question->name);
+             $data[] = $question->id;
+             $table->data[] = $data;
+         }
+     
+     }
+     
+       return $table;
 
+ 
 }
 
-  return $table;
+
+/**
+ * Returns a list of all current questions
+ *
+ * @return array table of variables
+ */
+function download_questions($array, $filename = "export.csv", $delimiter=",") {
+    global $DB, $PAGE;
+
+    //  throw new dml_exception(var_dump($array));
+      // open raw memory as file so no temp files needed, you might run out of memory though
+      $f = fopen('php://memory', 'w'); 
+      // loop over the input array
+      foreach ($array as $line) { 
+          // generate csv lines from the inner arrays
+          fputcsv($f, $line, $delimiter); 
+      }
+      // reset the file pointer to the start of the file
+      fseek($f, 0);
+      // tell the browser it's going to be a csv file
+      header('Content-Type: text/csv');
+      // tell the browser we want to save it instead of displaying it
+      header('Content-Disposition: attachment; filename="'.$filename.'";');
+      // make php send the generated csv lines to the browser
+      fpassthru($f);
+    
+    }
+
+    function array2csv(array &$array)
+{
+   if (count($array) == 0) {
+     return null;
+   }
+   ob_start();
+   $df = fopen("php://output", 'w');
+//    fputcsv($df, array_keys(reset($array)));
+        fputcsv($df, array('question','questiontext [DELETE]','answer', 'answertext[DELETE]' ,'variable','variablename[delete]','variable_change'));
+   foreach ($array as $row) {
+      fputcsv($df, $row);
+   }
+   fclose($df);
+   return ob_get_clean();
+}
+
+
+function download_send_headers($filename) {
+    // disable caching
+    $now = gmdate("D, d M Y H:i:s");
+    header("Expires: Tue, 03 Jul 2001 06:00:00 GMT");
+    header("Cache-Control: max-age=0, no-cache, must-revalidate, proxy-revalidate");
+    header("Last-Modified: {$now} GMT");
+
+    // force download  
+    header("Content-Type: application/force-download");
+    header("Content-Type: application/octet-stream");
+    header("Content-Type: application/download");
+
+    // disposition / encoding on response body
+    header("Content-Disposition: attachment;filename={$filename}");
+    header("Content-Transfer-Encoding: binary");
 }
 
 
@@ -688,17 +748,31 @@ function list_all_rules() {
    
    $table = new html_table();
    $rec= $DB->get_records('responsim_laws');   
-   $table->head = array( 'Frage','Antwort','Variable','Variablenänderung');
+   $table->head = array( 'Frage','Antwort','Variable','Variablenänderung', 'Regel löschen?');
    
 //    $data[] = html_writer::link($url, $sim->name);
 
     foreach($rec as $val)   {
+        // throw new dml_exception(var_dump($val->question));
+        $question= $DB->get_record('question',['id'=> $val->question]);
+        $answer= $DB->get_record('question_answers',['id'=> $val->answer]);
+        $variable = $DB->get_record('responsim_variables',['id'=> $val-> variable]);
         $data = array();
-        $data[] = $val->question;
-        $data[] = $val->answer;
-        $data[] = $val-> variable;
+        $data[] = $question->questiontext;
+        $data[] = $answer->answer;
+        $data[] = $variable->variable;
         $data[] = $val->variable_change;
+        $url = new moodle_url('/mod/responsim/delete_rule.php', array(
+            'id'=> $PAGE->cm->id,
+            'simulationid'=>$val->simulation, 
+            'lawid'=>$val->id
+        ));
+        $data[] = html_writer::link($url, 'löschen');
+
         $table->data[] = $data;
+
+    
+             
     }
    
    
