@@ -68,7 +68,7 @@ $PAGE->set_context($modulecontext);
 
 $question= $DB->get_record('question', ['id' =>$questionid ]);
 $answers= $DB->get_records('question_answers', ['question' =>$questionid  ]);
-$numans= count($answers);
+$SESSION->num_ans_qe= count($answers);
 
 
 

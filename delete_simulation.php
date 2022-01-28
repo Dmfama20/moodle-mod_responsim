@@ -13,9 +13,8 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
-
 /**
- * edits an instance of responsim.
+ * Prints an instance of responsim.
  *
  * @package     responsim
  * @copyright   2021 Your Name <you@example.com>
@@ -31,6 +30,7 @@ $id = optional_param('id', 0, PARAM_INT);
 
 // Activity instance id.
 $r = optional_param('r', 0, PARAM_INT);
+$simid = optional_param('simulationid', 0, PARAM_INT);
 
 if ($id) {
     $cm = get_coursemodule_from_id('responsim', $id, 0, false, MUST_EXIST);
@@ -56,47 +56,34 @@ $event->add_record_snapshot('course', $course);
 $event->add_record_snapshot('responsim', $moduleinstance);
 $event->trigger();
 
-$PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id));
+$PAGE->set_url('/mod/responsim/delete_simulation.php', array('id' => $cm->id,'simulationid'=>$simid));
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-//Add a fake block which is displaying some addtional data
-// responsim_add_fake_blocks($PAGE,$cm);
-
-
-
-$mform = new responsim_variables_form(null, array('courseid'=>$course->id, 'url'=>$PAGE->url));
-//display the form
-
-
+$mform = new responsim_simulations_form_delete(null, array('simulationid'=>$simid));
 
 if ($mform->is_cancelled())     {
 
     $currentparams = ['id' => $cm->id];
-    redirect(new moodle_url('/mod/responsim/variables.php', $currentparams));  
+    redirect(new moodle_url('/mod/responsim/simulations.php', $currentparams));  
 }
-// $mform->set_data((object)$currentparams);
+
 if($data = $mform->get_data()) {
-
-    $varname = $data->varname;
-    $value=$data->varvalue;
-    $varid= responsim_add_variables($varname, $value,$cm->id);
+    $DB->delete_records('responsim_simulations',['id'=> $simid]);
     $currentparams = ['id' => $cm->id];
-    redirect(new moodle_url('/mod/responsim/variables.php', $currentparams));    
-
+    redirect(new moodle_url('/mod/responsim/simulations.php', $currentparams));    
 }
 
 else {
+   
     
 }
+
 $OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab='variables';
-echo $OUTPUT->header( $cm, $currenttab, false, null, "TEst");
-
+$currenttab = 'simulations';
+echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+echo $OUTPUT ->heading( 'Smulation löschen?',2 );
 $mform->display();
-
-
-
 
 echo $OUTPUT->footer();

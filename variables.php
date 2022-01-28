@@ -75,7 +75,7 @@ $url_add_variable = html_writer::link(new moodle_url('/mod/responsim/add_variabl
 
 echo $OUTPUT->add_button($url_add_variable);
 
-    $table=list_all_variables($course->id,$edit=true);
+    $table=list_all_variables($cm->id,$edit=true);
     
 
    echo html_writer::table($table);

@@ -69,7 +69,7 @@ echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
 
 
-$table=list_all_simulations_rules();
+$table=list_all_simulations_rules($cm->id);
    
 echo html_writer::table($table);
 

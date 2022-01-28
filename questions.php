@@ -78,6 +78,8 @@ $mform = new questions_form(null, array('cmid'=>$cm->id, 'courseid'=>$course->id
 
 // $mform->set_data((object)$currentparams);
 if($data = $mform->get_data()) {
+    //  throw new dml_exception(var_dump($data));
+
     // show questions as a html table
     if($data->bulkdownload=='0')    {
 
@@ -90,14 +92,13 @@ if($data = $mform->get_data()) {
     else    {   
 
         if(!empty($data->selectcategories[0]))  {
+            // User has selected a category
             $rdurl=new moodle_url('/mod/responsim/questions.php',array('id' => $cm->id, 'categoryid'=>$data->selectcategories[0]));
     
-            
-     
            
          }
          if(!empty($data->selectquestions))     {
-
+            // User has selected some questions
             $bulk_questions = array();
            $counter=0;
             foreach($data->selectquestions as $qu)   {
@@ -106,7 +107,7 @@ if($data = $mform->get_data()) {
                 foreach($answers as $ans)   {
                     foreach($data->selectvariables as $var)   {
                         $variable=$DB->get_record('responsim_variables',['id'=>$var]);
-                        $bulk_questions[$counter]= array($qu, $question->questiontext,$ans->id,$ans->answer, 
+                        $bulk_questions[$counter]= array($qu, clean_param($question->questiontext,PARAM_TEXT),$ans->id,clean_param($ans->answer,PARAM_TEXT), 
                         $var,$variable->variable);
                         $counter++;
 

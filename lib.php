@@ -323,7 +323,7 @@ function responsim_block_contents($cmid) {
 
    
         
-   $records_vars = $DB->get_records('responsim_variables');
+   $records_vars = $DB->get_records('responsim_variables',['cmid'=>$cmid]);
    
 $content="";
 foreach ($records_vars as $var) {
@@ -357,11 +357,11 @@ $record_value = $DB->get_record('responsim_variable_values', ['variable' => $var
  * @return int The id of the newly inserted philosophers record
  * @throws dml_exception
  */
-function responsim_add_variables($varname, $value) {
+function responsim_add_variables($varname, $value,$cmid) {
     global $DB, $USER;
     
     // insert into db
-        $add_params = ['variable' => $varname];
+        $add_params = ['variable' => $varname,'cmid'=>$cmid];
     $varid = $DB->insert_record('responsim_variables', $add_params);
 
     $add_params = ['variable' => $varid,  'mdl_user' => $USER->id,'gamesession' => 1,'variable_value'=> $value];
@@ -402,8 +402,8 @@ function responsim_add_question($questionname, $questiontext) {
  * @return $id of the clicked answer
  * @throws dml_exception
  */
-function responsim_track_data($data) {
-    global $DB,$USER;
+function responsim_track_data($data,$cmid) {
+    global $DB,$USER, $SESSION;
         $answers = $DB->get_records('question_answers', ['question' => $data->qid]);
         $numans = count($answers);
         $questionorder='';
@@ -416,7 +416,8 @@ function responsim_track_data($data) {
         }
         $arrquest= explode(',', $questionorder);
         // insert into db
-        $add_params = ['gamesession'=>'1', 'mdl_user'=> $USER->id, 'question'=> $data->qid,'answer'=> $arrquest[$data->answer -1], 'answerordering'=>$questionorder];
+        // throw new dml_exception(var_dump($data->answer));
+        $add_params = ['gamesession'=>'1', 'mdl_user'=> $USER->id,'cmid'=>$cmid, 'question'=> $data->qid,'answer'=> $arrquest[$data->answer -1], 'answerordering'=>$questionorder];
          $DB->insert_record('responsim_answertracking', $add_params);
 
         $id =$arrquest[$data->answer -1];
@@ -432,10 +433,10 @@ function responsim_track_data($data) {
  * @return $id if the datta is stored correctly
  * @throws dml_exception
  */
-function responsim_apply_rules($entry) {
+function responsim_apply_rules($entry,$cmid) {
     global $DB;
         
-        $rec=$DB->get_records('responsim_laws',['answer'=>$entry]);
+        $rec=$DB->get_records('responsim_laws',['cmid'=>$cmid,'answer'=>$entry]);
 
         foreach($rec as $r) {
             $var=$DB->get_record('responsim_variable_values',['variable'=>$r->variable]);
@@ -512,12 +513,12 @@ function responsim_add_answer($answername, $answertext) {
  * @return int The id of the newly inserted responsim record
  * @throws dml_exception
  */
-function responsim_add_simulation($simname) {
+function responsim_add_simulation($simname,$cmid) {
     global $DB, $USER;
         // insert into db
     
                
-                $add_params = ['name' => $simname,'mdl_user'=> $USER->id, 'timecreated'=>time()];
+                $add_params = ['name' => $simname,'mdl_user'=> $USER->id, 'timecreated'=>time(),'cmid'=>$cmid];
                 $id= $DB->insert_record('responsim_simulations', $add_params);
         
     return $id;
@@ -690,7 +691,7 @@ function responsim_add_simulation_data($simdata,$simid,$simquestions) {
  *
  * @return array table of variables
  */
-function list_all_variables($editable=false) {
+function list_all_variables($cmid,$editable=false) {
     global $DB, $PAGE;
    //Standard values without submitting the form
 
@@ -705,7 +706,7 @@ function list_all_variables($editable=false) {
    else {
    $table->head = array( 'Variable' , 'Wert');
    }
-   $records_vars = $DB->get_records('responsim_variables');
+   $records_vars = $DB->get_records('responsim_variables',['cmid'=>$cmid]);
    
     foreach ($records_vars as $var) {
 
@@ -743,14 +744,14 @@ function list_all_variables($editable=false) {
  *
  * @return array table of variables
  */
-function list_all_rules() {
+function list_all_rules($cmid) {
     global $DB, $PAGE;
    //Standard values without submitting the form
 //    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
 //    $numactivies = count($activities);
    
    $table = new html_table();
-   $rec= $DB->get_records('responsim_laws');   
+   $rec= $DB->get_records('responsim_laws',['cmid'=>$cmid]);   
    $table->head = array( 'Frage','Antwort','Variable','Variablenänderung', 'Regel löschen?');
    
 //    $data[] = html_writer::link($url, $sim->name);
@@ -817,9 +818,9 @@ foreach ($records_answers as $answer) {
  * *
  * @return int ID the db entry
  */
-function add_rule($formdata, $simulation) {
+function add_rule($formdata, $simulation,$cmid) {
     global $DB;
-    $id=$DB->insert_record('responsim_laws',['gamesession'=>'1','simulation' =>$simulation, 'question'=> $formdata->selectquestion,
+    $id=$DB->insert_record('responsim_laws',['gamesession'=>'1','cmid'=>$cmid,'simulation' =>$simulation, 'question'=> $formdata->selectquestion,
     'answer'=>$formdata->selectanswer, 'variable'=>$formdata->selectvariable, 'variable_change'=>$formdata->varchange]);
     return $id;
  
@@ -833,7 +834,7 @@ function add_rule($formdata, $simulation) {
  *
  * @return array table of simulations
  */
-function list_all_simulations() {
+function list_all_simulations($cmid) {
     global $DB, $PAGE;
    //Standard values without submitting the form
 
@@ -846,7 +847,7 @@ function list_all_simulations() {
    $table->head = array( 'Simulation', ' ' );
    
   
-   $records_sims = $DB->get_records('responsim_simulations');
+   $records_sims = $DB->get_records('responsim_simulations',['cmid'=>$cmid]);
    
     foreach ($records_sims as $sim) {
         $data = array();
@@ -854,7 +855,7 @@ function list_all_simulations() {
             'id'     => $PAGE->cm->id,
             'simulationid'=> $sim->id
         ));
-        $url2 = new moodle_url('/mod/responsim/edit_simulations.php', array(
+        $url2 = new moodle_url('/mod/responsim/delete_simulation.php', array(
             'id'     => $PAGE->cm->id,
             'simulationid'=> $sim->id
         ));
@@ -872,7 +873,7 @@ function list_all_simulations() {
  *
  * @return array table of simulations
  */
-function list_all_simulations_rules() {
+function list_all_simulations_rules($cmid) {
     global $DB, $PAGE;
    //Standard values without submitting the form
 
@@ -885,7 +886,7 @@ function list_all_simulations_rules() {
    $table->head = array( 'Simulation' );
    
   
-   $records_sims = $DB->get_records('responsim_simulations');
+   $records_sims = $DB->get_records('responsim_simulations',['cmid'=>$cmid]);
    
     foreach ($records_sims as $sim) {
         $data = array();
@@ -910,7 +911,7 @@ function list_all_simulations_rules() {
  *
  * @return array table of simulations
  */
-function list_all_simulations_and_start() {
+function list_all_simulations_and_start($cmid) {
     global $DB, $PAGE;
    //Standard values without submitting the form
 
@@ -923,7 +924,7 @@ function list_all_simulations_and_start() {
    $table->head = array( 'Simulation' );
    
   
-   $records_sims = $DB->get_records('responsim_simulations');
+   $records_sims = $DB->get_records('responsim_simulations',['cmid'=>$cmid]);
    
     foreach ($records_sims as $sim) {
 

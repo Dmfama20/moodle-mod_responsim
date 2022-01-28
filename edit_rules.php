@@ -94,7 +94,7 @@ echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 echo $OUTPUT->heading($simulation->name." bearbeiten:",4);
 $mform->display();
 
-$table=list_all_rules($data );
+$table=list_all_rules($cm->id );
 echo html_writer::table($table);   
 
 echo $OUTPUT->footer();

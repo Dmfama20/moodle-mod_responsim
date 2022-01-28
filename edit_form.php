@@ -286,9 +286,7 @@ class responsim_add_rule_form extends moodleform {
 class responsim_show_question_form extends moodleform {
     //Add elements to form
     public function definition() {
-        global $PAGE, $DB;
-
-
+        global $PAGE, $DB, $SESSION;
        
         $mform = $this->_form; // Don't forget the underscore! 
         foreach ($PAGE->url->params() as $name => $value) {
@@ -301,16 +299,25 @@ class responsim_show_question_form extends moodleform {
 
         $radioarray=array();
         $alignment=array();
-        reset($this->_customdata['answers']);
-        for($i = 1; $i <= 4;$i++)    {
-            $radioarray[] = $mform->createElement('radio', 'answer', '', 
-            clean_param(current($this->_customdata['answers'])->answer, PARAM_TEXT), 
-            $i);
+        $i=1;
+        $curqu= $DB->get_record('responsim_gamesession',['id'=>'1']);
+        $params = array('questionid' => $curqu->current_question);
+        // $answers=$DB->get_records('question_answers',['question'=> '10504']);
+           // build query for moodle question selection
+           $sql = "
+           SELECT answer
+             FROM {question_answers} 
+            WHERE question = :questionid
+       ";
+       
+       // Get all available questions.
+       $answers = $DB->get_records_sql($sql,$params);
+        foreach($answers as $ans)    {
+            $radioarray[] = $mform->createElement('radio', 'answer', '', clean_param($ans->answer, PARAM_TEXT), $i);
             $alignment[]='<br/>';
-            next($this->_customdata['answers']);
+            $i++;            
         }
         $mform->addGroup($radioarray, 'radioar', '', $alignment, false);
-         
         $this->add_action_buttons($cancel = false, $submitlabel='Abschicken!');
     
     }
@@ -361,6 +368,25 @@ class responsim_simulations_form_add extends moodleform {
         $mform->addElement('text', 'name', "Simulations-Name", $attr_simulation_name);
         $mform->setType('name', PARAM_TEXT);
         $this->add_action_buttons($cancel = false, $submitlabel='Anlegen!');
+    
+    }
+    // //Custom validation should be added here
+    // function validation($data, $files) {
+    //     return array();
+    // }
+}
+
+class responsim_simulations_form_delete extends moodleform {
+    //Add elements to form
+    public function definition() {
+        global $PAGE, $CFG;
+       
+        $mform = $this->_form; // Don't forget the underscore! 
+        foreach ($PAGE->url->params() as $name => $value) {
+            $mform->addElement('hidden', $name, $value);
+            $mform->setType($name, PARAM_RAW);
+        } 
+        $this->add_action_buttons($cancel = true, $submitlabel='OK!');
     
     }
     // //Custom validation should be added here
@@ -442,7 +468,9 @@ class responsim_answer_form_add extends moodleform {
 class responsim_questions_form_edit extends moodleform {
     //Add elements to form
     public function definition() {
-        global $PAGE, $DB;
+        global $PAGE, $DB, $SESSION;
+
+        // throw new dml_exception(var_dump($SESSION->num_ans));
        
         $mform = $this->_form; // Don't forget the underscore! 
         foreach ($PAGE->url->params() as $name => $value) {
@@ -459,7 +487,7 @@ class responsim_questions_form_edit extends moodleform {
        
         
         reset( $this->_customdata['answers']);
-         for($i = 1; $i <= 4;$i++)  {
+         for($i = 1; $i <= $SESSION->num_ans_qe;$i++)  {
             $mform->addElement('hidden',"hidden_".$i,   current($this->_customdata['answers'])->id  );
             $mform->setType('hidden_'.$i , PARAM_INT);
             next( $this->_customdata['answers']);
@@ -485,7 +513,8 @@ class responsim_questions_form_edit extends moodleform {
 
             reset( $this->_customdata['answers']);
     
-            for($i = 1; $i <= 4;$i++)  {
+            for($i = 1; $i <= $SESSION->num_ans_qe;$i++)  {
+
 
                 $mform->addElement('static', '', '',  current( $this->_customdata['answers'])->answer);
                 $check = $DB->record_exists('responsim_answers',['answer' => current( $this->_customdata['answers'])->id ]);
@@ -532,8 +561,22 @@ class questions_form extends moodleform {
 
         $mform->addElement('static', '', '', "Kategorie wählen");
      
+        if($this->_customdata['categoryid']>0)  {
+            // Selected category->Category already selected
+        $categorytoinclude = array();
+        foreach ($categories as $index => $category) {
+            
+            $categorytoinclude[$category['id']] = $category['name'];
+            
+        }
+        $mform->addElement('select', 'selectcategories', 'select categories', $categorytoinclude)->setSelected($this->_customdata['categoryid']);  
+        $mform->getElement('selectcategories')->setMultiple(true);
+        $mform->getElement('selectcategories')->setSize(count($categorytoinclude));    
+        $mform->setAdvanced('selectcategories', true);   
 
-        // Selected category
+        }
+        else{
+             // Selected category->No Category selected
         $categorytoinclude = array();
         foreach ($categories as $index => $category) {
             
@@ -543,23 +586,40 @@ class questions_form extends moodleform {
         $mform->addElement('select', 'selectcategories', 'select categories', $categorytoinclude);  
         $mform->getElement('selectcategories')->setMultiple(true);
         $mform->getElement('selectcategories')->setSize(count($categorytoinclude));    
-        $mform->setAdvanced('selectcategories', true);    
-        // Select questions
+        $mform->setAdvanced('selectcategories', true);   
+
+        }
+        
+
+
+        if($this->_customdata['categoryid']>0)  {
+              // Select questions
          $questionstoinclude = array();
          $questions=$DB->get_records('question',['category'=> $this->_customdata['categoryid']]);
+        //  All questions of all Simulations
+        $recs=$DB->get_records('responsim_simulations',['cmid'=>$this->_customdata['cmid']]);
+        $simquestions=array();
+        foreach($recs as $sim)   {
+            $questions_temp = explode(',',$sim->questions_raw);
+            $simquestions=array_merge($simquestions,$questions_temp);
+        }
          foreach ($questions as $qu) {
-             
-             $questionstoinclude[$qu->id] = $qu->name;
-             
+             if(in_array($qu->id,$simquestions))    {
+                $questionstoinclude[$qu->id] = $qu->name;
+             }   
          }
          $mform->addElement('select', 'selectquestions', 'select questions', $questionstoinclude);  
          $mform->getElement('selectquestions')->setMultiple(true);
          $mform->getElement('selectquestions')->setSize(count($questionstoinclude));    
          $mform->setAdvanced('selectquestions', true);   
 
-         // Select variables
+
+        } 
+      
+        if($this->_customdata['categoryid']>0)  {
+             // Select variables
          $variablestoinclude = array();
-         $variables=$DB->get_records('responsim_variables');
+         $variables=$DB->get_records('responsim_variables',['cmid'=>$this->_customdata['cmid']]);
          foreach ($variables as $var) {
              
              $variablestoinclude[$var->id] = $var->variable;
@@ -569,6 +629,10 @@ class questions_form extends moodleform {
          $mform->getElement('selectvariables')->setMultiple(true);
          $mform->getElement('selectvariables')->setSize(count($variablestoinclude));    
          $mform->setAdvanced('selectvariables', true);   
+         $mform->hideIf('selectvariables', 'bulkdownload','neq','1');  
+
+        }
+        
 
 
         $this->add_action_buttons($cancel = true, $submitlabel='OK');

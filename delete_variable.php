@@ -79,8 +79,6 @@ if($data = $mform->get_data()) {
     $DB->delete_records('responsim_variables',['id'=> $variableid]);
     $currentparams = ['id' => $cm->id];
     redirect(new moodle_url('/mod/responsim/variables.php', $currentparams)); 
-
-
 }
 
 else    {

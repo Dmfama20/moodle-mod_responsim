@@ -60,28 +60,18 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
-//Add a fake block which is displaying some addtional data
-// responsim_add_fake_blocks($PAGE,$cm);
-
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'simulations';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
-
 $mform = new responsim_simulations_form_add(null, array('courseid'=>$course->id, 'url'=>$PAGE->url));
-//display the form
-$mform->display();
-
 
 if ($mform->is_cancelled())     {
 
     $currentparams = ['id' => $cm->id];
     redirect(new moodle_url('/mod/responsim/view.php', $currentparams));  
 }
-// $mform->set_data((object)$currentparams);
+
 if($data = $mform->get_data()) {
 
     $simname = $data->name;
-    $varid= responsim_add_simulation( $simname);
+    $varid= responsim_add_simulation( $simname,$cm->id);
     $currentparams = ['id' => $cm->id];
     redirect(new moodle_url('/mod/responsim/simulations.php', $currentparams));
 
@@ -89,20 +79,15 @@ if($data = $mform->get_data()) {
 }
 
 else {
-    $table=list_all_simulations();
-    
-   
-   echo html_writer::table($table);
-
-
+    $table=list_all_simulations($cm->id);
     
 }
 
-
-
-
-
-
-
-
+$OUTPUT = $PAGE->get_renderer('mod_responsim');
+$currenttab = 'simulations';
+echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+$mform->display();
+if(isset($table)){
+    echo html_writer::table($table);
+}
 echo $OUTPUT->footer();
