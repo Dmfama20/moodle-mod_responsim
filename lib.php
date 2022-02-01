@@ -930,12 +930,12 @@ function list_all_simulations_and_start($cmid) {
 
         $simdata=$DB->get_records('responsim_simulation_data',['simulation'=>$sim->id] );
         // Move pointer to first element of the array
-        $firstquestion=reset($simdata)->question;
+        // $firstquestion=reset($simdata)->question;
         $data = array();
         $url = new moodle_url('/mod/responsim/view.php', array(
             'id'     => $PAGE->cm->id,
             'simulationid'=> $sim->id,
-            'questionid'=>$firstquestion,
+            // 'questionid'=>$firstquestion,
         ));
         $data[] = html_writer::link($url, $sim->name);
         $table->data[] = $data;

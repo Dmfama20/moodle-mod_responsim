@@ -70,94 +70,166 @@ $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
+if( $simulationid !=0 && $questionid     ==0 )  {
 
-if( $simulationid !=0 && $questionid     !=0 ) {
-
-    $simulation=$DB->get_record('responsim_simulations',['id'=>$simulationid]);
-    $simulation_data=$DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
-    $questiondata = $DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
-    $currentquestion=  $DB->get_record('responsim_simulation_data',['simulation'=>$simulationid, 'question'=>$questionid]);
-
-
-
-//Add a fake block which is displaying some addtional data
-responsim_add_fake_blocks($PAGE,$cm);
-if($currentquestion->end_question)     {
-    // Last question
-
-    // TODO: DIRTY->Questionid
-    $url_next_question= new moodle_url('/mod/responsim/view.php',
-    array('id' => $cm->id,'lastpage'=>'1'));
-
-}
-
-
-else    {
+  // Check for existing gamesessions of start a new one
+  if($DB->record_exists('responsim_gamesession',['state'=>'progress']))   {
+    // Record exists: Find current gamesession
+    if($DB->count_records('responsim_gamesession',['state'=>'progress']) >'1')  {
+        // Check if more than one records exists
+        throw new dml_exception('Error: more than one record found!');
+    }
+    else{
+         // Continue last game and find next question
+        $gamesession=$DB->get_record('responsim_gamesession',['state'=>'progress']);
+        $params=['gamesession'=>$gamesession->id];
+                        $sql = "
+            SELECT ra.id
+            FROM {responsim_answertracking}  AS ra
+            WHERE
+            ra.gamesession = :gamesession
+            ORDER BY ra.id DESC
+        ";
+        $tracking_data = $DB->get_records_sql($sql,$params); 
+         $id=reset($tracking_data)->id;
+         $lastansweredquestion=$DB->get_record('responsim_answertracking',['id'=>$id]);
+         $nextquestion=$DB->get_record('responsim_simulation_data',['simulation'=>$simulationid,'question'=>$lastansweredquestion->question]);
+         $url_next_question= new moodle_url('/mod/responsim/view.php',
+         array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$nextquestion->next_question));
+        //  redirect($url_next_question);
+        //   throw new dml_exception( var_dump( $nextquestion->next_question));
+          
+    }
     
-    $url_next_question= new moodle_url('/mod/responsim/view.php',
-array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->next_question));
+    // throw new dml_exception('rec exists');
 
 }
 
-
-
-$url_current_question= new moodle_url('/mod/responsim/view.php',
-array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$questionid, 'answergiven'=>'1'));
-
-$answers = $DB->get_records('question_answers', ['question' => $questionid ] );
-// Number of answers
-$SESSION->num_ans_view= count($answers);
-$SESSION->question = $questionid;
-if($DB->record_exists('responsim_gamesession',['id'=>'1']))  {
-    $DB->update_record('responsim_gamesession',['id'=>'1','mdl_user'=>$USER->id,'cmid'=>$cm->id,'current_question'=>$questionid]);
+    // user clicked the simulation need another click to start
+    $sim=$DB->get_record('responsim_simulations',['id'=>$simulationid]);
+    $questionarray=explode(',',$sim->questions_raw);
+    $firstquestion=reset($questionarray);
+    $OUTPUT = $PAGE->get_renderer('mod_responsim');
+    $currenttab = 'view';
+    echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+    $url = new moodle_url('/mod/responsim/view.php', array(
+        'id'     => $PAGE->cm->id,
+        'simulationid'=> $sim->id,
+        'questionid'=>$firstquestion,
+    ));
+    echo 'Start a ';
+    echo html_writer::link($url, 'new simulation');
+    if(isset($url_next_question))   {
+        echo ' or ';
+        echo html_writer::link($url_next_question, 'Continue simulation');
+    }
+   
+   
+    echo $OUTPUT->footer();
 }
 else{
-    $DB->insert_record('responsim_gamesession',['mdl_user'=>$USER->id,'cmid'=>$cm->id,'current_question'=>$questionid]);
+    // User started the simulation 
+    if( $simulationid !=0 && $questionid     !=0 ) {
+
+        $simulation=$DB->get_record('responsim_simulations',['id'=>$simulationid]);
+        $simulation_data=$DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
+        $questiondata = $DB->get_records('responsim_simulation_data',['simulation'=>$simulationid]);
+        $currentquestion=  $DB->get_record('responsim_simulation_data',['simulation'=>$simulationid, 'question'=>$questionid]);
+    
+    
+    
+    //Add a fake block which is displaying some addtional data
+    responsim_add_fake_blocks($PAGE,$cm);
+    if($currentquestion->end_question)     {
+        // Last question
+    
+        // TODO: DIRTY->Questionid
+        $url_next_question= new moodle_url('/mod/responsim/view.php',
+        array('id' => $cm->id,'lastpage'=>'1'));
+    
+    }
+    
+    
+    else    {
+        
+        $url_next_question= new moodle_url('/mod/responsim/view.php',
+    array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->next_question));
+    
+    }
+    
+    
+    
+    $url_current_question= new moodle_url('/mod/responsim/view.php',
+    array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$questionid, 'answergiven'=>'1'));
+    
+    $answers = $DB->get_records('question_answers', ['question' => $questionid ] );
+    // Number of answers
+    $SESSION->num_ans_view= count($answers);
+    $SESSION->question = $questionid;
+    if($DB->record_exists('responsim_gamesession',['id'=>'1']))  {
+        $DB->update_record('responsim_gamesession',['id'=>'1','mdl_user'=>$USER->id,'cmid'=>$cm->id,'current_question'=>$questionid]);
+    }
+    else{
+        $DB->insert_record('responsim_gamesession',['mdl_user'=>$USER->id,'cmid'=>$cm->id,'current_question'=>$questionid]);
+    }
+    if($currentquestion->first_question)    {
+        // start gamesession
+        
+        $id=$DB->update_record('responsim_gamesession',['state'=>'progress','id'=>'1']);
+       
+
+    } 
+    $mform = new responsim_show_question_form( $url_current_question, array('questionid'=>$questionid));
+    
+    
+    
+    // $mform->set_data((object)$currentparams);
+    if($data = $mform->get_data()) {
+      
+           $idlastentry= responsim_track_data($data,$cm->id);
+        // throw new invalid_parameter_exception("gamesession " . $lastentry );
+        responsim_apply_rules($idlastentry,$cm->id);
+        $url_next_question=new moodle_url('/mod/responsim/view.php',
+        array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->question));
+        // Stop gamesession 
+        if($currentquestion->end_question) {
+            $DB->update_record('responsim_gamesession',['id'=>'1','state'=>'finished']);
+        }
+        redirect($url_current_question);
+    
+    }
+    
+    if($answergiven=='1')   {
+    
+            redirect($url_next_question);
+    
+    }
+    
+    
+    $OUTPUT = $PAGE->get_renderer('mod_responsim');
+    $currenttab = 'view';
+    echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+    echo $OUTPUT->show_question($questionid);
+    $mform->display();
+    echo $OUTPUT->footer();
+    
+    }
+    
+    
+    
+    else    {
+    
+    $OUTPUT = $PAGE->get_renderer('mod_responsim');
+    $currenttab = 'view';
+    echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
+    $table=list_all_simulations_and_start($cm->id);
+    echo html_writer::table($table);
+    echo $OUTPUT->footer();
+    
+    }
+
 }
 
-$mform = new responsim_show_question_form( $url_current_question, array('questionid'=>$questionid, 'answers'=> $answers));
 
-
-
-// $mform->set_data((object)$currentparams);
-if($data = $mform->get_data()) {
-//   throw new dml_exception(var_dump($data));
-   $idlastentry= responsim_track_data($data,$cm->id);
-    // throw new invalid_parameter_exception("gamesession " . $lastentry );
-    responsim_apply_rules($idlastentry,$cm->id);
-    $url_next_question=new moodle_url('/mod/responsim/view.php',
-    array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->question));
-    redirect($url_current_question);
-
-}
-
-if($answergiven=='1')   {
-
-        redirect($url_next_question);
-
-}
-
-
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'view';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
-echo $OUTPUT->show_question($questionid);
-$mform->display();
-echo $OUTPUT->footer();
-
-}
-
-
-
-else    {
-
-$OUTPUT = $PAGE->get_renderer('mod_responsim');
-$currenttab = 'view';
-echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
-$table=list_all_simulations_and_start($cm->id);
-echo html_writer::table($table);
-echo $OUTPUT->footer();
-
-}
 
 

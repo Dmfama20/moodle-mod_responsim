@@ -301,7 +301,7 @@ class responsim_show_question_form extends moodleform {
         $alignment=array();
         $i=1;
         $curqu= $DB->get_record('responsim_gamesession',['id'=>'1']);
-        $params = array('questionid' => $curqu->current_question);
+        $params = array('questionid' => $this->_customdata['questionid']);
         // $answers=$DB->get_records('question_answers',['question'=> '10504']);
            // build query for moodle question selection
            $sql = "
