@@ -69,9 +69,12 @@ $currenttab = 'summary';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
 $array=list_summary($cm->id);
+$i=1;
 foreach($array as $a)   {
+    echo $OUTPUT ->heading('Ergebnnis-Tabelle '.$i,3);
     echo html_writer::table($a);
     echo '<br/>';
+    $i++;
 }
 
 

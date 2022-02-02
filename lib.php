@@ -900,7 +900,7 @@ function list_summary($cmid) {
 
    foreach($gamesession_IDs as $gs) {
     $table = new html_table();
-    $table->align[1] = 'right';
+    $table->align[0] = 'left';
    
     $table->head = array( 'Session ID', 'User-ID ', 'Frage', 'Gegebene Antwort');
     $records=$DB->get_records('responsim_answertracking', ['cmid'=>$cmid, 'gamesession'=>$gs->gamesession]);
