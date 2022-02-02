@@ -68,7 +68,11 @@ $OUTPUT = $PAGE->get_renderer('mod_responsim');
 $currenttab = 'summary';
 echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
-
+$array=list_summary($cm->id);
+foreach($array as $a)   {
+    echo html_writer::table($a);
+    echo '<br/>';
+}
 
 
 echo $OUTPUT->footer();

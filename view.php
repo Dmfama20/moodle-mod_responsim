@@ -71,7 +71,7 @@ $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
 
 if( $simulationid !=0 && $questionid     ==0 )  {
-
+    
   // Check for existing gamesessions of start a new one
   if($DB->record_exists('responsim_gamesession',['state'=>'progress']))   {
     // Record exists: Find current gamesession
@@ -82,6 +82,10 @@ if( $simulationid !=0 && $questionid     ==0 )  {
     else{
          // Continue last game and find next question
         $gamesession=$DB->get_record('responsim_gamesession',['state'=>'progress']);
+        // Set gs marker 
+        $SESSION->gamesession='1';
+        // Set gamesession ID
+        $SESSION->gamesessionid=$gamesession->id;
         $params=['gamesession'=>$gamesession->id];
                         $sql = "
             SELECT ra.id
@@ -166,56 +170,68 @@ else{
     // Number of answers
     $SESSION->num_ans_view= count($answers);
     $SESSION->question = $questionid;
-    if($DB->record_exists('responsim_gamesession',['id'=>'1']))  {
-        $DB->update_record('responsim_gamesession',['id'=>'1','mdl_user'=>$USER->id,'cmid'=>$cm->id,'current_question'=>$questionid]);
-    }
-    else{
-        $DB->insert_record('responsim_gamesession',['mdl_user'=>$USER->id,'cmid'=>$cm->id,'current_question'=>$questionid]);
-    }
+   
     if($currentquestion->first_question)    {
         // start gamesession
+        // Check for gamesessions existent gamesessions
+        if($SESSION->gamesession!='1')   {
+            if($DB->record_exists('responsim_gamesession',['state'=>'progress']))   {
+                $sessions=$DB->get_records('responsim_gamesession',['state'=>'progress']);
+                foreach($sessions as $gs)   {
+                    // Close all active gamesessions and create a n new one
+                    $DB->update_record('responsim_gamesession',['id'=>$gs->id,'mdl_user'=>$USER->id,'cmid'=>$cm->id,'state'=>'finished']);
+                }
+                $SESSION->gamesessionid=$DB->insert_record('responsim_gamesession',['mdl_user'=>$USER->id,'cmid'=>$cm->id,'state'=>'progress']);  
+                $SESSION->gamesession='1';  
+            } 
+            else{
+                // Create a new gamesession
+                $SESSION->gamesessionid= $DB->insert_record('responsim_gamesession',['mdl_user'=>$USER->id,'cmid'=>$cm->id,'state'=>'progress']);
+               $SESSION->gamesession='1';
+            }
+        }
+       
         
-        $id=$DB->update_record('responsim_gamesession',['state'=>'progress','id'=>'1']);
        
 
     } 
     $mform = new responsim_show_question_form( $url_current_question, array('questionid'=>$questionid));
     
     
-    
     // $mform->set_data((object)$currentparams);
     if($data = $mform->get_data()) {
-      
-           $idlastentry= responsim_track_data($data,$cm->id);
+        $idlastentry= responsim_track_data($data,$cm->id,$SESSION->gamesessionid);
         // throw new invalid_parameter_exception("gamesession " . $lastentry );
         responsim_apply_rules($idlastentry,$cm->id);
         $url_next_question=new moodle_url('/mod/responsim/view.php',
         array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->question));
-        // Stop gamesession 
-        if($currentquestion->end_question) {
-            $DB->update_record('responsim_gamesession',['id'=>'1','state'=>'finished']);
-        }
         redirect($url_current_question);
     
     }
     
     if($answergiven=='1')   {
-    
+
+        if($currentquestion->end_question) {
+            $session=$DB->get_record('responsim_gamesession',['state'=>'progress']);
+            $DB->update_record('responsim_gamesession',['id'=>$session->id,'mdl_user'=>$USER->id,'cmid'=>$cm->id,'state'=>'finished']);
+            $SESSION->gamesession='0';
+            $SESSION->gamesessionid='0';
+            redirect($url_next_question,'You reached the end of the simulation!');
+        }
+        else{
             redirect($url_next_question);
+        }
     
-    }
+            
     
-    
+    }    
     $OUTPUT = $PAGE->get_renderer('mod_responsim');
     $currenttab = 'view';
     echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
     echo $OUTPUT->show_question($questionid);
     $mform->display();
     echo $OUTPUT->footer();
-    
     }
-    
-    
     
     else    {
     

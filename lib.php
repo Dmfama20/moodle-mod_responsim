@@ -402,7 +402,7 @@ function responsim_add_question($questionname, $questiontext) {
  * @return $id of the clicked answer
  * @throws dml_exception
  */
-function responsim_track_data($data,$cmid) {
+function responsim_track_data($data,$cmid, $gamesessionid) {
     global $DB,$USER, $SESSION;
         $answers = $DB->get_records('question_answers', ['question' => $data->qid]);
         $numans = count($answers);
@@ -417,7 +417,11 @@ function responsim_track_data($data,$cmid) {
         $arrquest= explode(',', $questionorder);
         // insert into db
         // throw new dml_exception(var_dump($data->answer));
-        $add_params = ['gamesession'=>'1', 'mdl_user'=> $USER->id,'cmid'=>$cmid, 'question'=> $data->qid,'answer'=> $arrquest[$data->answer -1], 'answerordering'=>$questionorder];
+        // Check if gamesession id is correctly set
+        if ($gamesessionid=='0')    {
+            throw new dml_exception('Wrong gamesession ID: '.$gamesessionid);
+        }
+        $add_params = ['gamesession'=>$gamesessionid, 'mdl_user'=> $USER->id,'cmid'=>$cmid, 'question'=> $data->qid,'answer'=> $arrquest[$data->answer -1], 'answerordering'=>$questionorder];
          $DB->insert_record('responsim_answertracking', $add_params);
 
         $id =$arrquest[$data->answer -1];
@@ -865,6 +869,58 @@ function list_all_simulations($cmid) {
     }
 
   return $table;
+}
+
+/**
+ * Returns a list of all current simulations
+ *
+ * @return array table of simulations
+ */
+function list_summary($cmid) {
+    global $DB, $PAGE;
+   //Standard values without submitting the form
+
+//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+//    $numactivies = count($activities);
+    $returnarray=array();
+   
+   
+   $params=['cmid'=>$cmid];
+//    Search for distinct gamesession IDs
+
+                        $sql = "
+            SELECT DISTINCT ra.gamesession
+            FROM {responsim_answertracking}  AS ra
+            WHERE
+            ra.cmid = :cmid
+            ORDER BY ra.id ASC
+        ";
+        $gamesession_IDs = $DB->get_records_sql($sql,$params); 
+    //    throw new dml_exception(var_dump($gamesession_IDs ));
+
+   foreach($gamesession_IDs as $gs) {
+    $table = new html_table();
+    $table->align[1] = 'right';
+   
+    $table->head = array( 'Session ID', 'User-ID ', 'Frage', 'Gegebene Antwort');
+    $records=$DB->get_records('responsim_answertracking', ['cmid'=>$cmid, 'gamesession'=>$gs->gamesession]);
+
+    foreach ($records as $rec) {
+        $data = array();
+        $user= $DB->get_record('user', ['id'=>$rec->mdl_user]);
+        $data[] = $rec->gamesession;
+        $data[] = $user->lastname.", ".$user->firstname;
+        $question= $DB->get_record('question', ['id'=>$rec->question]);
+        $data[] = clean_param($question->questiontext,PARAM_TEXT);
+        $answer= $DB->get_record('question_answers', ['id'=>$rec->answer]);
+        $data[] = clean_param($answer->answer,PARAM_TEXT);
+        $table->data[] = $data;
+    }
+    $returnarray[]=$table;
+ 
+   }
+
+  return $returnarray;
 }
 
 
