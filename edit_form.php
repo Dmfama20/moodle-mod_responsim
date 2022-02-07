@@ -174,6 +174,9 @@ class responsim_add_rule_form extends moodleform {
 
     $mform->addElement('advcheckbox', 'bulkupload', 'Bulk Upload', 'use CSV-file');
     $mform->setDefault('bulkupload', 0);
+    $mform->addElement('advcheckbox', 'deletebyupload', 'Alte Regeln bei CSV Upload löschen', 'Dateien löschen');
+    $mform->hideif('deletebyupload', 'bulkupload', 'eq', '0');
+    $mform->setDefault('deletebyupload', 1);
    
     $maxbytes = $CFG->maxbytes;
 

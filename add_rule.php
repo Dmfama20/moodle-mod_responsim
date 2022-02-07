@@ -89,6 +89,22 @@ if($data = $mform->get_data()) {
  // Mode:Bulkupload
   if($data->bulkupload==1)  {
 
+      if($data->deletebyupload==1)  {
+        // First delete all existing rules
+        if($DB->record_exists('responsim_laws',['cmid'=>$cm->id,'simulation'=>$simulationid]))  {
+            $records=$DB->get_records('responsim_laws',['cmid'=>$cm->id,'simulation'=>$simulationid]);
+        foreach($records as $r)     {
+            $lawid=$r->id;
+            $DB->delete_records('responsim_laws',['id'=>$lawid]);
+
+        }
+
+        }
+        
+
+      }
+    //   Create new rules
+
     $importid = csv_import_reader::get_new_iid('uploadlist');
 
     $cir = new csv_import_reader($importid, 'uploadlist');
