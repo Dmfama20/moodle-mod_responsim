@@ -434,19 +434,19 @@ function responsim_track_data($data,$cmid, $gamesessionid) {
  * Saves answers given by the students
  *
  *
- * @return $id if the datta is stored correctly
+ * @return $id of the next question
  * @throws dml_exception
  */
 function responsim_apply_rules($entry,$cmid) {
     global $DB;
-        
         $rec=$DB->get_records('responsim_laws',['cmid'=>$cmid,'answer'=>$entry]);
-
         foreach($rec as $r) {
+            $idnextquestion=NULL;
+            if(!empty($idnextquestion)) {
+                $idnextquestion=$r->next_question;
+            }
             $var=$DB->get_record('responsim_variable_values',['variable'=>$r->variable]);
-
             $val=$var->variable_value;
-            
             $valchange=$r->variable_change;
             $newstr=str_replace('{var}', '',$valchange);
             $op= substr($newstr,0,1);
@@ -480,13 +480,8 @@ function responsim_apply_rules($entry,$cmid) {
                     $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
                     break;
             }
-            
-
-
-            
         }
-
-return 0 ;
+return $idnextquestion ;
 }
 
 /**
@@ -601,7 +596,7 @@ function download_questions($array, $filename = "export.csv", $delimiter=",") {
    ob_start();
    $df = fopen("php://output", 'w');
 //    fputcsv($df, array_keys(reset($array)));
-        fputcsv($df, array('question','questiontext [DELETE]','answer', 'answertext[DELETE]' ,'variable','variablename[delete]','variable_change'));
+        fputcsv($df, array('question','questiontext [DELETE]','answer', 'answertext[DELETE]' ,'variable','variablename[delete]','variable_change','next_question'));
    foreach ($array as $row) {
       fputcsv($df, $row);
    }
@@ -646,7 +641,6 @@ function responsim_add_simulation_data($simdata,$simid,$simquestions) {
             $DB->delete_records('responsim_simulation_data',['simulation'=> $simid]);
         }
 
-
     $counter=1;
     $questionids = array();
         // We need more than one loop through the data since fields like "next_question" etc. has to be filled
@@ -660,29 +654,22 @@ function responsim_add_simulation_data($simdata,$simid,$simquestions) {
                 next($simdata);
             }
             else    {
-                
-
                 if($counter !=$lentgth)    {
                     // Check if this is the index  of the array
                     $add_params = ['simulation' => $simid,'first_question'=>false, 'question'=>$data,'last_question'=>$simdata[key($simdata)-1]
                     ,'next_question'=>next($simdata)];
                     $questionids[] = $DB->insert_record('responsim_simulation_data', $add_params);
-
                 }
                 else{
-                    // This is the lasz index of the array
+                    // This is the last index of the array
                     $add_params = ['simulation' => $simid,'first_question'=>false, 'question'=>$data,'last_question'=>$simdata[key($simdata)-1],
                     'end_question'=>true];
                 $questionids[] = $DB->insert_record('responsim_simulation_data', $add_params);
 
                 }
-                
             }
             $counter++;
-            
-        }
-
-        
+        } 
     return  $questionids;
 }
 
@@ -750,16 +737,13 @@ function list_all_variables($cmid,$editable=false) {
  */
 function list_all_rules($cmid) {
     global $DB, $PAGE;
-   //Standard values without submitting the form
-//    $activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
-//    $numactivies = count($activities);
-   
+    //Standard values without submitting the form
+    //$activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
+    //$numactivies = count($activities);  
    $table = new html_table();
    $rec= $DB->get_records('responsim_laws',['cmid'=>$cmid]);   
-   $table->head = array( 'Frage','Antwort','Variable','Variablenänderung', 'Regel löschen?');
-   
+   $table->head = array( 'Frage','Antwort','Variable','Variablenänderung', 'nächste Frage','Regel löschen?');
 //    $data[] = html_writer::link($url, $sim->name);
-
     foreach($rec as $val)   {
         // throw new dml_exception(var_dump($val->question));
         $question= $DB->get_record('question',['id'=> $val->question]);
@@ -770,22 +754,15 @@ function list_all_rules($cmid) {
         $data[] = $answer->answer;
         $data[] = $variable->variable;
         $data[] = $val->variable_change;
+        $data[] = $val->next_question;
         $url = new moodle_url('/mod/responsim/delete_rule.php', array(
             'id'=> $PAGE->cm->id,
             'simulationid'=>$val->simulation, 
             'lawid'=>$val->id
         ));
         $data[] = html_writer::link($url, 'löschen');
-
         $table->data[] = $data;
-
-    
-             
     }
-   
-   
-   
-
   return $table;
 }
 

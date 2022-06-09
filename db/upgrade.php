@@ -257,6 +257,7 @@ function xmldb_responsim_upgrade($oldversion) {
         $table->add_field('answer', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
         $table->add_field('variable', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
         $table->add_field('variable_change', XMLDB_TYPE_TEXT, null, null, null, null, null);
+        $table->add_field('next_question', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
 
         // Adding keys to table responsim_laws.
         $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);

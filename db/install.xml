@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<XMLDB PATH="mod/responsim/db" VERSION="20220128" COMMENT="XMLDB file for Moodle mod_responsim"
+<XMLDB PATH="mod/responsim/db" VERSION="20220609" COMMENT="XMLDB file for Moodle mod_responsim"
     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
     xsi:noNamespaceSchemaLocation="../../../lib/xmldb/xmldb.xsd"
 >
@@ -129,6 +129,7 @@
         <FIELD NAME="answer" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false" COMMENT="ID of the current answer"/>
         <FIELD NAME="variable" TYPE="int" LENGTH="20" NOTNULL="true" SEQUENCE="false"/>
         <FIELD NAME="variable_change" TYPE="text" NOTNULL="false" SEQUENCE="false"/>
+        <FIELD NAME="next_question" TYPE="int" LENGTH="10" NOTNULL="false" SEQUENCE="false"/>
       </FIELDS>
       <KEYS>
         <KEY NAME="primary" TYPE="primary" FIELDS="id"/>

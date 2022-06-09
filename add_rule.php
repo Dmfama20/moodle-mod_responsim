@@ -165,7 +165,8 @@ if($data = $mform->get_data()) {
         // Save CSV-content to DB
         // TODO: modify gamesession!
         $data_config = ['gamesession'=>'1', 'cmid'=>$cm->id,'simulation'=>$simulationid, 'question'=>$line['question'],
-                        'answer'=>$line['answer'],'variable'=>$line['variable'], 'variable_change'=>$line['variable_change']];
+                        'answer'=>$line['answer'],'variable'=>$line['variable'],
+                         'variable_change'=>$line['variable_change'],'next_question'=>$line['next_question']];
        $DB->insert_record('responsim_laws',$data_config);
        $counter++;
     }

@@ -118,8 +118,6 @@ if($data = $mform->get_data()) {
            
             }
 
-             
-
             download_send_headers("data_export_" . date("Y-m-d") . ".csv");
             echo array2csv($bulk_questions);
             die();
