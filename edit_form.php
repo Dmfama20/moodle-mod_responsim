@@ -312,16 +312,24 @@ class responsim_show_question_form extends moodleform {
              FROM {question_answers} 
             WHERE question = :questionid
        ";
-       
        // Get all available questions.
        $answers = $DB->get_records_sql($sql,$params);
+       if(count($answers)=='0') {
+        // No answers available 
+        // $url_back_to_main = html_writer::link(new moodle_url('/mod/responsim/add_answer.php', 
+        // array('id' => $PAGE->cm->id )) , "Zurück zum Menü", array('class' => 'btn btn-primary'));
+        // echo $OUTPUT->add_button($url_back_to_main);
+       }
+       else{
         foreach($answers as $ans)    {
-            $radioarray[] = $mform->createElement('radio', 'answer', '', clean_param($ans->answer, PARAM_TEXT), $i);
-            $alignment[]='<br/>';
+            $radioarray[] = $mform->createElement('radio', 'answer', '', $i.".) ".clean_param($ans->answer, PARAM_TEXT), $i);
+            $alignment[]='</br>';
             $i++;            
         }
         $mform->addGroup($radioarray, 'radioar', '', $alignment, false);
         $this->add_action_buttons($cancel = false, $submitlabel='Abschicken!');
+       }
+        
     
     }
     // //Custom validation should be added here

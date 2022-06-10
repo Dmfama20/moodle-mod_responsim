@@ -194,6 +194,8 @@ else{
        
     } 
     $mform = new responsim_show_question_form( $url_current_question, array('questionid'=>$questionid));
+   
+
     
     
     // $mform->set_data((object)$currentparams);
@@ -241,6 +243,23 @@ else{
     echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
     echo $OUTPUT->show_question($questionid);
     $mform->display();
+        $params = array('questionid' => $questionid);
+        // $answers=$DB->get_records('question_answers',['question'=> '10504']);
+        // build query for moodle question selection
+        $sql = "
+        SELECT answer
+            FROM {question_answers} 
+            WHERE question = :questionid
+    ";
+    // Get all available answers.
+    $answers = $DB->get_records_sql($sql,$params);
+    if(count($answers)=='0') {
+        // No answers available 
+        $url_back_to_main = html_writer::link(new moodle_url('/mod/responsim/view.php', 
+        array('id' => $PAGE->cm->id )) , "Zurück zum Menü", array('class' => 'btn btn-primary'));
+        echo $OUTPUT->add_button($url_back_to_main);
+    }
+
     echo $OUTPUT->footer();
     }
     
