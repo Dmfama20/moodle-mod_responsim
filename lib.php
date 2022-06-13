@@ -596,7 +596,7 @@ function download_questions($array, $filename = "export.csv", $delimiter=",") {
    ob_start();
    $df = fopen("php://output", 'w');
 //    fputcsv($df, array_keys(reset($array)));
-        fputcsv($df, array('question','questiontext [DELETE]','answer', 'answertext[DELETE]' ,'variable','variablename[delete]','variable_change','next_question'));
+        fputcsv($df, array('question','questiontitle [DELETE]','questiontext [DELETE]','answer', 'answertext[DELETE]' ,'variable','variablename[delete]','variable_change','next_question'));
    foreach ($array as $row) {
       fputcsv($df, $row);
    }

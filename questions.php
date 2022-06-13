@@ -107,7 +107,7 @@ if($data = $mform->get_data()) {
                 foreach($answers as $ans)   {
                     foreach($data->selectvariables as $var)   {
                         $variable=$DB->get_record('responsim_variables',['id'=>$var]);
-                        $bulk_questions[$counter]= array($qu, clean_param($question->questiontext,PARAM_TEXT),$ans->id,clean_param($ans->answer,PARAM_TEXT), 
+                        $bulk_questions[$counter]= array($qu,clean_param($question->name,PARAM_TEXT), clean_param($question->questiontext,PARAM_TEXT),$ans->id,clean_param($ans->answer,PARAM_TEXT), 
                         $var,$variable->variable);
                         $counter++;
 

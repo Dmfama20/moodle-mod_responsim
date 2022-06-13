@@ -255,8 +255,11 @@ else{
     $answers = $DB->get_records_sql($sql,$params);
     if(count($answers)=='0') {
         // No answers available 
+        $sim=$DB->get_record('responsim_simulations',['id'=>$simulationid]);
+        $questionarray=explode(',',$sim->questions_raw);
+        $firstquestion=reset($questionarray);
         $url_back_to_main = html_writer::link(new moodle_url('/mod/responsim/view.php', 
-        array('id' => $PAGE->cm->id )) , "Zurück zum Menü", array('class' => 'btn btn-primary'));
+        array('id' => $PAGE->cm->id, 'simulationid' => $simulationid, 'questionid'=> $firstquestion )) , "Zurück zum Menü", array('class' => 'btn btn-primary'));
         echo $OUTPUT->add_button($url_back_to_main);
     }
 
