@@ -11,7 +11,7 @@
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 // GNU General Public License for more details.
 //
-// You should have received a copy of the GNU General Public License
+// You should have receivedlist_all_rules a copy of the GNU General Public License
 // along with Moodle.  If not, see <https://www.gnu.org/licenses/>.
 
 /**
@@ -735,13 +735,13 @@ function list_all_variables($cmid,$editable=false) {
  *
  * @return array table of variables
  */
-function list_all_rules($cmid) {
+function list_all_rules($cmid,$simulation) {
     global $DB, $PAGE;
     //Standard values without submitting the form
     //$activities = local_dexpmod_get_activities($courseID, null, 'orderbycourse');
     //$numactivies = count($activities);  
    $table = new html_table();
-   $rec= $DB->get_records('responsim_laws',['cmid'=>$cmid]);   
+   $rec= $DB->get_records('responsim_laws',['cmid'=>$cmid,'simulation'=>$simulation]);   
    $table->head = array( 'Frage','Antwort','Variable','Variablenänderung', 'nächste Frage','Regel löschen?');
 //    $data[] = html_writer::link($url, $sim->name);
     foreach($rec as $val)   {
