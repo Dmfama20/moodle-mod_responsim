@@ -323,7 +323,7 @@ class responsim_show_question_form extends moodleform {
        else{
         foreach($answers as $ans)    {
             $radioarray[] = $mform->createElement('radio', 'answer', '', $i.".) ".clean_param($ans->answer, PARAM_TEXT), $i);
-            $alignment[]='</br>';
+            $alignment[]='</p>';
             $i++;            
         }
         $mform->addGroup($radioarray, 'radioar', '', $alignment, false);
@@ -580,6 +580,7 @@ class questions_form extends moodleform {
             $categorytoinclude[$category['id']] = $category['name'];
             
         }
+
         $mform->addElement('select', 'selectcategories', 'select categories', $categorytoinclude)->setSelected($this->_customdata['categoryid']);  
         $mform->getElement('selectcategories')->setMultiple(true);
         $mform->getElement('selectcategories')->setSize(count($categorytoinclude));    

@@ -448,38 +448,46 @@ function responsim_apply_rules($entry,$cmid) {
             $var=$DB->get_record('responsim_variable_values',['variable'=>$r->variable]);
             $val=$var->variable_value;
             $valchange=$r->variable_change;
-            $newstr=str_replace('{var}', '',$valchange);
-            $op= substr($newstr,0,1);
-            switch ($op) {
-                case '/':
-                    $lentgth = strlen($newstr)-1;
-                    $lentgth=$lentgth*(-1);
-                    $num=substr($newstr,$lentgth);
-                    $val=$val/$num;
-                    $id = $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
-                    break;
-                case '*':
-                    $lentgth = strlen($newstr)-1;
-                    $lentgth=$lentgth*(-1);
-                    $num=substr($newstr,$lentgth);
-                    $val=$val*$num;
-                    $id = $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
-                    break;
-                case '+':
-                    $lentgth = strlen($newstr)-1;
-                    $lentgth=$lentgth*(-1);
-                    $num=substr($newstr,$lentgth);
-                    $val=$val+$num;
-                    $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
-                    break;
-                case '-':
-                    $lentgth = strlen($newstr)-1;
-                    $lentgth=$lentgth*(-1);
-                    $num=substr($newstr,$lentgth);
-                    $val=$val-$num;
-                    $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
-                    break;
-            }
+            // $newstr=str_replace('{var}', '',$valchange);
+            $op= substr($valchange,0,1);
+
+            
+                switch ($op) {
+                    case '/':
+                        $lentgth = strlen($valchange)-1;
+                        $lentgth=$lentgth*(-1);
+                        $num=substr($valchange,$lentgth);
+                        $val=$val/$num;
+                        $id = $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                        break;
+                    case '*':
+                        $lentgth = strlen($valchange)-1;
+                        $lentgth=$lentgth*(-1);
+                        $num=substr($valchange,$lentgth);
+                        $val=$val*$num;
+                        $id = $DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                        break;
+                    case '+':
+                        $lentgth = strlen($valchange)-1;
+                        $lentgth=$lentgth*(-1);
+                        $num=substr($valchange,$lentgth);
+                        $val=$val+$num;
+                        $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                        break;
+                    case '-':
+                        $lentgth = strlen($valchange)-1;
+                        $lentgth=$lentgth*(-1);
+                        $num=substr($valchange,$lentgth);
+                        $val=$val-$num;
+                        $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $val]);
+                        break;
+                        // No operator included, simply replace the current value
+                    default:
+                        $id =$DB->update_record('responsim_variable_values',['id'=>$var->id,'variable_value'=> $valchange]);
+                }
+            
+           
+       
         }
 return $idnextquestion ;
 }
