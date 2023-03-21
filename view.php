@@ -238,11 +238,29 @@ else{
         }
     
     }    
-    $OUTPUT = $PAGE->get_renderer('mod_responsim');
-    $currenttab = 'view';
+    // $OUTPUT = $PAGE->get_renderer('mod_responsim');
+     $currenttab = 'view';
     echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
-    echo $OUTPUT->show_question($questionid);
+
+   
+    // echo $OUTPUT->show_question($questionid);
+    $questiontext= $DB->get_record('question', ['id'=>$questionid]);
+
+    $questionout='<p align=“justify“;
+    style="margin-left: 0em;
+    font-weight:bold;
+    background-color:#f7f7f7;
+    padding: 2em 2em 2em 2em;
+    border-width: 2px; border-color: black; border-style:solid;">';
+     $questionout.=clean_param($questiontext->questiontext,PARAM_TEXT);
+     $questionout.='</p>';
+    // $questionout=Example of a paragraph with margin and padding.</p>';
+      echo  $questionout;
+      echo '<h4>Ihre Antwort:</h4>';
     $mform->display();
+    $backurl=new moodle_url('/mod/responsim/view.php', array('id' => $cm->id,  ));
+    echo $OUTPUT->single_button($backurl, 'Zurück zum Menü', 'get');
+
         $params = array('questionid' => $questionid);
         // $answers=$DB->get_records('question_answers',['question'=> '10504']);
         // build query for moodle question selection

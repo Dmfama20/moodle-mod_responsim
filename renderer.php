@@ -100,9 +100,11 @@ class mod_responsim_renderer extends plugin_renderer_base {
      * @param single_button $button
      * @return string
      */
-    public function message($message, single_button $button = null) {
+    public function message($questionid, single_button $button = null) {
+        global $DB;
+        $question= $DB->get_record('question', ['id'=>$questionid]);
         $output  = $this->output->box_start('generalbox boxaligncenter');
-        $output .= $message;
+        $output .= $question->questiontext;
         if ($button !== null) {
             $output .= $this->output->box($this->output->render($button), 'lessonbutton standardbutton');
         }
@@ -124,11 +126,9 @@ class mod_responsim_renderer extends plugin_renderer_base {
         // $simulation= $DB->get_record('responsim_simulations',['id'=> '1']);
         // $simulation_data= $DB->get_records('responsim_simulation_data',['simulation'=> '1']);
         // $question_data=$DB->get_record('responsim_simulation_data',['simulation'=> '1','question'=>$questionid]);
-        
-        $output = $this->output->box($question->questiontext);
-        $output .= $this->output->box_start('center');
 
-
+        $output = $this->output->box_start('generalbox');
+        $output .= $this->output->box($question->questiontext);
         $output .= $this->output->box_end();
         return $output;
     }

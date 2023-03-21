@@ -323,10 +323,9 @@ class responsim_show_question_form extends moodleform {
        else{
         foreach($answers as $ans)    {
             $radioarray[] = $mform->createElement('radio', 'answer', '', $i.".) ".clean_param($ans->answer, PARAM_TEXT), $i);
-            $alignment[]='</p>';
             $i++;            
         }
-        $mform->addGroup($radioarray, 'radioar', '', $alignment, false);
+        $mform->addGroup($radioarray, 'radioar', '', '</br>', false);
         $this->add_action_buttons($cancel = false, $submitlabel='Abschicken!');
        }
         
