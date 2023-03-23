@@ -464,18 +464,24 @@ function responsim_return_answerid($data) {
  */
 function check_for_feedback($questionid,$answerid) {
     global $DB,$USER, $SESSION;
-        $question = $DB->get_record('question', ['id' => $questionid]);
-        $questionfeedback=$question->generalfeedback;
-        $answer= $DB->get_record('question_answers', ['id' => $answerid]);
-        if(strlen($questionfeedback) >0) {
-            return true;
-        }
-        elseif (strlen($answer->feedback)>0 ) {
-            return true;
+        if($DB->record_exists('question', ['id' => $questionid])||$DB->record_exists('question_answers', ['id' => $answerid]))   {
+            $question = $DB->get_record('question', ['id' => $questionid]);
+            $questionfeedback=$question->generalfeedback;
+            $answer= $DB->get_record('question_answers', ['id' => $answerid]);
+            if(strlen($questionfeedback) >0) {
+                return true;
+            }
+            elseif (strlen($answer->feedback)>0 ) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
         else {
             return false;
         }
+       
 }
 
 /**
