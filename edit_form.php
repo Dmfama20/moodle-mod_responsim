@@ -322,10 +322,19 @@ class responsim_show_question_form extends moodleform {
        }
        else{
         foreach($answers as $ans)    {
-            $radioarray[] = $mform->createElement('radio', 'answer', '', $i.".) ".clean_param($ans->answer, PARAM_TEXT), $i);
-            $i++;            
+            $radioarray[] = $mform->createElement('radio', 'answer', $i.".) ".clean_param($ans->answer, PARAM_TEXT),' ', $i);    
+             $i++;            
         }
-        $mform->addGroup($radioarray, 'radioar', '', '</br>', false);
+        $mform->addGroup($radioarray, 'radioar', ' ', '</br>', false);
+
+        // $buttonarray[] = $mform->createElement('submit', 'submitbutton',
+        //         "Abschicken!",
+        //         // Additional attribs to handle collapsible div.
+        //         // ['data-toggle' => "modal" , 'data-target' => "#exampleModal"]);
+        //         ['data-toggle' => 'collapse', 'data-target' => "#collapseAddForm"]);
+        //         $mform->addGroup($buttonarray, 'buttonar', '', ' ', false);
+           
+
         $this->add_action_buttons($cancel = false, $submitlabel='Abschicken!');
        }
         

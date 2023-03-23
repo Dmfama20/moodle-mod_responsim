@@ -431,6 +431,54 @@ function responsim_track_data($data,$cmid, $gamesessionid) {
 }
 
 /**
+ * returns the ID of the given anbswer
+ *
+ *
+ * @return $id of the clicked answer
+ * @throws dml_exception
+ */
+function responsim_return_answerid($data) {
+    global $DB,$USER, $SESSION;
+        $answers = $DB->get_records('question_answers', ['question' => $data->qid]);
+        $numans = count($answers);
+        $questionorder='';
+        $i=1;
+        foreach($answers as $ans)   {
+            $questionorder.=$ans->id;
+            if(++$i <=  $numans) {
+                $questionorder.=',';
+            }
+        }
+        $arrquest= explode(',', $questionorder);
+      
+        $id =$arrquest[$data->answer -1];
+    return  $id;
+}
+
+/**
+ * Check for feedback
+ *
+ *
+ * @return $id of the clicked answer
+ * @throws dml_exception
+ */
+function check_for_feedback($questionid,$answerid) {
+    global $DB,$USER, $SESSION;
+        $question = $DB->get_record('question', ['id' => $questionid]);
+        $questionfeedback=$question->generalfeedback;
+        $answer= $DB->get_record('question_answers', ['id' => $answerid]);
+        if(strlen($questionfeedback) >0) {
+            return true;
+        }
+        elseif (strlen($answer->feedback)>0 ) {
+            return true;
+        }
+        else {
+            return false;
+        }
+}
+
+/**
  * Saves answers given by the students
  *
  *

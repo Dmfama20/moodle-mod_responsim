@@ -26,6 +26,6 @@ defined('MOODLE_INTERNAL') || die();
 
 $plugin->component = 'mod_responsim';
 $plugin->release = '0.2.0';
-$plugin->version = 2023032100;
+$plugin->version = 2023032300;
 $plugin->requires = 2017111300;
 $plugin->maturity = MATURITY_ALPHA;

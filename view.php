@@ -26,6 +26,9 @@ require(__DIR__.'/../../config.php');
 require_once(__DIR__.'/lib.php');
 require_once(__DIR__.'/edit_form.php');
 
+
+
+
 // Course module id.
 $id = optional_param('id', 0, PARAM_INT);
 
@@ -40,6 +43,8 @@ $simulationid = optional_param('simulationid', 0, PARAM_INT);
 $lastpage    = optional_param('lastpage', 0, PARAM_INT);
 $showlastpage    = optional_param('showlastpage', 0, PARAM_BOOL);
 $answergiven    = optional_param('answergiven', 0, PARAM_INT);
+$questionanswered = optional_param('questionanswered', 0, PARAM_INT);
+$lastanswer= optional_param('lastanswer', 0, PARAM_INT);
 $alternativenextquestion    = optional_param('alternativenextquestion', 0, PARAM_INT);
 
 if ($id) {
@@ -70,6 +75,9 @@ $PAGE->set_url('/mod/responsim/view.php', array('id' => $cm->id, 'simulationid'=
 $PAGE->set_title(format_string($moduleinstance->name));
 $PAGE->set_heading(format_string($course->fullname));
 $PAGE->set_context($modulecontext);
+// $PAGE->requires->js('/mod/responsim/script.js');
+// $PAGE->requires->js_init_call('hello',true);
+ 
 
 if( $simulationid !=0 && $questionid     ==0 )  {
     
@@ -153,6 +161,11 @@ else{
     }
     else    {   
         if($alternativenextquestion !='0') {
+
+            $url_to_feedback=  $url_next_question= new moodle_url('/mod/responsim/feedback.php',
+            array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$alternativenextquestion,'questionanswered'=>$questionanswered,'lastanswer'=> $lastanswer));
+
+            // // This URL is chosen in the final redirect to the next question!!
             $url_next_question= new moodle_url('/mod/responsim/view.php',
         array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$alternativenextquestion));
         }
@@ -194,15 +207,16 @@ else{
        
     } 
     $mform = new responsim_show_question_form( $url_current_question, array('questionid'=>$questionid));
-   
 
     
     
+  
     // $mform->set_data((object)$currentparams);
     if($data = $mform->get_data()) {
         $idlastentry= responsim_track_data($data,$cm->id,$SESSION->gamesessionid);
         responsim_apply_rules($idlastentry,$cm->id);
-
+        $idanswergiven= responsim_return_answerid($data);
+        // throw new dml_exception(var_dump( $data));
         $url_next_question=new moodle_url('/mod/responsim/view.php',
         array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$currentquestion->question));
         // Check for next question
@@ -213,8 +227,7 @@ else{
                 $nextquestionid= $r->next_question;
         $url_current_question= new moodle_url('/mod/responsim/view.php',
         array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$questionid, 
-        'answergiven'=>'1','alternativenextquestion'=>$nextquestionid ));
-
+        'answergiven'=>'1','alternativenextquestion'=>$nextquestionid, 'answergiven'=>1,'questionanswered'=>$data->qid,'lastanswer'=> $idanswergiven));
             }
         }
         // throw new dml_exception('ID: '.$currentquestion->question);
@@ -233,8 +246,12 @@ else{
             redirect($url_next_question,'You reached the end of the simulation!');
         }
         else{
-            // throw new dml_exception('ID: '.$url_next_question   );
-             redirect($url_next_question);
+            if(check_for_feedback($questionanswered,$lastanswer))   {
+                    redirect( $url_to_feedback);
+            }
+            else {
+                redirect( $url_next_question);
+            }
         }
     
     }    
@@ -243,9 +260,8 @@ else{
     echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 
    
-    // echo $OUTPUT->show_question($questionid);
+    // Show question in a nice box.
     $questiontext= $DB->get_record('question', ['id'=>$questionid]);
-
     $questionout='<p align=“justify“;
     style="margin-left: 0em;
     font-weight:bold;
@@ -257,6 +273,7 @@ else{
     // $questionout=Example of a paragraph with margin and padding.</p>';
       echo  $questionout;
       echo '<h4>Ihre Antwort:</h4>';
+
     $mform->display();
     $backurl=new moodle_url('/mod/responsim/view.php', array('id' => $cm->id,  ));
     echo $OUTPUT->single_button($backurl, 'Zurück zum Menü', 'get');
