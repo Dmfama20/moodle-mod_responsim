@@ -206,13 +206,17 @@ else{
         }
        
     } 
+
+ 
     $mform = new responsim_show_question_form( $url_current_question, array('questionid'=>$questionid));
 
     
-    
+          
   
     // $mform->set_data((object)$currentparams);
     if($data = $mform->get_data()) {
+
+      
         $idlastentry= responsim_track_data($data,$cm->id,$SESSION->gamesessionid);
         responsim_apply_rules($idlastentry,$cm->id);
         $idanswergiven= responsim_return_answerid($data);
@@ -246,6 +250,7 @@ else{
             redirect($url_next_question,'You reached the end of the simulation!');
         }
         else{
+                        
             if(check_for_feedback($questionanswered,$lastanswer))   {
                     redirect( $url_to_feedback);
             }
@@ -275,6 +280,43 @@ else{
       echo '<h4>Ihre Antwort:</h4>';
 
     $mform->display();
+    // // Modal Test
+    // echo <<<EOF
+    // <!-- Button trigger modal -->
+    // <button type="button" class="btn btn-primary" data-toggle="modal" onclick="buttonclick()"  data-target="#exampleModal">
+    //   Launch demo modal
+    // </button>
+    // <script>
+    // function buttonclick(){
+    // var pagebutton= document.getElementById("id_submitbutton");
+    // pagebutton.click();
+    // }
+    // </script>
+    
+    // <!-- Modal -->
+    // <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    //   <div class="modal-dialog">
+    //     <div class="modal-content">
+    //       <div class="modal-header">
+    //         <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+    //         <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+    //           <span aria-hidden="true">&times;</span>
+    //         </button>
+    //       </div>
+    //       <div class="modal-body">
+    //         Here, some bla bla bla 
+    //       </div>
+    //       <div class="modal-footer">
+    //         <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+    //         <button type="button" class="btn btn-primary" onclick="buttonclick()")>Save changes</button>
+    //       </div>
+    //     </div>
+    //   </div>
+    // </div>
+       
+    // EOF;
+
+
     $backurl=new moodle_url('/mod/responsim/view.php', array('id' => $cm->id,  ));
     echo $OUTPUT->single_button($backurl, 'Zurück zum Menü', 'get');
 

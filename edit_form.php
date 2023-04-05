@@ -322,7 +322,7 @@ class responsim_show_question_form extends moodleform {
        }
        else{
         foreach($answers as $ans)    {
-            $radioarray[] = $mform->createElement('radio', 'answer', $i.".) ".clean_param($ans->answer, PARAM_TEXT),' ', $i);    
+            $radioarray[] = $mform->createElement('radio', 'answer', $i.".) ".clean_param($ans->answer, PARAM_NOTAGS),' ', $i);    
              $i++;            
         }
         $mform->addGroup($radioarray, 'radioar', ' ', '</br>', false);

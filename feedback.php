@@ -81,18 +81,51 @@ echo $OUTPUT ->header( $cm, $currenttab, false, null, "TEst");
 // Show question in a nice box.
 $questiontext= $DB->get_record('question', ['id'=>$questionanswered]);
 $questionanswer= $DB->get_record('question_answers', ['id'=>$lastanswer]);
-$questionout='<p align=“justify“;
+
+$questionbox='<p align=“justify“;
 style="margin-left: 0em;
 font-weight:bold;
 background-color:#f7f7f7;
 padding: 2em 2em 2em 2em;
 border-width: 2px; border-color: black; border-style:solid;">';
- $questionout.=clean_param($questiontext->generalfeedback,PARAM_TEXT);
- $questionout.="</br>";
- $questionout.=clean_param($questionanswer->feedback,PARAM_TEXT);
- $questionout.='</p>';
+$questionbox.=clean_param($questiontext->questiontext,PARAM_TEXT);
+$questionbox.='</p>';
+echo $questionbox;
+echo '<h4>Ihre Antwort:</h4>';
+$sql = "
+    SELECT *
+    FROM {question_answers} 
+    WHERE question = :questionid
+    ";
+$params = array('questionid' => $questionanswered);
+// Get all available questions.
+$answers = $DB->get_records_sql($sql,$params); 
+$list="<ol type='1'>";
+foreach($answers as $ans)    {
+        if($lastanswer==$ans->id)   {
+            $list.="<li>". "<b>".clean_param($ans->answer, PARAM_NOTAGS)."</b>"."</li>" ;   
+        }
+        else {
+            $list.="<li>".clean_param($ans->answer, PARAM_NOTAGS)."</li>" ;   
+        }
+        
+}
+$list.="</ol> ";
+echo $list;
+
+
+$feedbacktext='<p align=“justify“;
+style="margin-left: 0em;
+font-weight:bold;
+background-color:#99ff99;
+padding: 2em 2em 2em 2em;
+border-width: 2px; border-color: black; border-style:solid;">';
+ $feedbacktext.=clean_param($questiontext->generalfeedback,PARAM_TEXT);
+ $feedbacktext.="</br>";
+ $feedbacktext.=clean_param($questionanswer->feedback,PARAM_TEXT);
+ $feedbacktext.='</p>';
 // $questionout=Example of a paragraph with margin and padding.</p>';
-  echo  $questionout;
+  echo  $feedbacktext;
   $back_to_question_url=new moodle_url('/mod/responsim/view.php',
   array('id' => $cm->id, 'simulationid'=>$simulationid,'questionid'=>$questionid));
   echo $OUTPUT->single_button($back_to_question_url, 'Zur nächsten Frage', 'get');
