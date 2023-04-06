@@ -340,15 +340,11 @@ function responsim_reset_variables( $cm) {
  * @return block_contents
  **/
 function responsim_block_contents($cmid) {
- global $DB;
-
-   
-        
-   $records_vars = $DB->get_records('responsim_variables',['cmid'=>$cmid]);
-   
+ global $DB, $USER;
+$records_vars = $DB->get_records('responsim_variables',['cmid'=>$cmid]);
 $content="";
 foreach ($records_vars as $var) {
-$record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
+$record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id, 'mdl_user'=>$USER->id]);
  $content .=$var->variable."= ".$record_value->variable_value ;
   $content .= "<br>" ;
     }
