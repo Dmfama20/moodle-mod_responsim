@@ -307,8 +307,29 @@ function responsim_add_fake_blocks($page, $cm) {
     if (!empty($bc)) {
         $page->blocks->add_fake_block($bc, $page->blocks->get_default_region());
     }
-
 }
+
+function responsim_reset_variables( $cm) {
+    global $DB, $USER;
+    $records_vars = $DB->get_records('responsim_variables',['cmid'=>$cm]);
+    foreach ($records_vars as $var) {
+        // Check initial value
+        $initialvalue = $DB->get_record('responsim_variable_initial',['variable'=>$var->id]);
+        // Check if entry exists
+        if($DB->record_exists('responsim_variable_values',[ 'variable'=>$var->id,'mdl_user'=>$USER->id]))    {
+            $rec=$DB->get_record('responsim_variable_values',[ 'variable'=>$var->id,'mdl_user'=>$USER->id]);
+            $update_params = ['id'=>$rec->id,'variable_value' =>  $initialvalue->value];
+            $DB->update_record('responsim_variable_values',$update_params ); 
+        }
+        else    {
+            $add_params = ['variable' => $var->id,'mdl_user'=>$USER->id, 'variable_value'=>$initialvalue->value];
+            $DB->insert_record('responsim_variable_values', $add_params);
+        }
+
+    }
+   
+}
+
 
 
 /**
@@ -327,9 +348,6 @@ function responsim_block_contents($cmid) {
    
 $content="";
 foreach ($records_vars as $var) {
-
-
-
 $record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
  $content .=$var->variable."= ".$record_value->variable_value ;
   $content .= "<br>" ;
@@ -364,8 +382,8 @@ function responsim_add_variables($varname, $value,$cmid) {
         $add_params = ['variable' => $varname,'cmid'=>$cmid];
     $varid = $DB->insert_record('responsim_variables', $add_params);
 
-    $add_params = ['variable' => $varid,  'mdl_user' => $USER->id,'gamesession' => 1,'variable_value'=> $value];
-    $id = $DB->insert_record('responsim_variable_values', $add_params);
+    $add_params = ['variable' => $varid, 'value'=> $value];
+    $id = $DB->insert_record('responsim_variable_initial', $add_params);
     
 
     return $id;
@@ -763,7 +781,7 @@ function list_all_variables($cmid,$editable=false) {
    
     foreach ($records_vars as $var) {
 
-    $record_value = $DB->get_record('responsim_variable_values', ['variable' => $var->id]);
+    $record_value = $DB->get_record('responsim_variable_initial', ['variable' => $var->id]);
     if($editable)   {
         $data = array();
         $url = new moodle_url('/mod/responsim/edit_variable.php', array(

@@ -272,6 +272,27 @@ function xmldb_responsim_upgrade($oldversion) {
         upgrade_mod_savepoint(true, 2021120700, 'responsim');
     }
 
+    if ($oldversion < 2023040600) {
+
+       // Define table variable_initial_value to be created.
+       $table = new xmldb_table('responsim_variable_initial');
+       // Adding fields to table variable_initial_value.
+       $table->add_field('id', XMLDB_TYPE_INTEGER, '10', null, XMLDB_NOTNULL, XMLDB_SEQUENCE, null);
+       $table->add_field('variable', XMLDB_TYPE_INTEGER, '20', null, XMLDB_NOTNULL, null, null);
+       $table->add_field('value', XMLDB_TYPE_INTEGER, '10', null, null, null, null);
+
+       // Adding keys to table variable_initial_value.
+       $table->add_key('primary', XMLDB_KEY_PRIMARY, ['id']);
+
+       // Conditionally launch create table for variable_initial_value.
+       if (!$dbman->table_exists($table)) {
+           $dbman->create_table($table);
+       }
+
+       // Responsim savepoint reached.
+       upgrade_mod_savepoint(true, 2023040600, 'responsim');
+    }
+
 
 
 

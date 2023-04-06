@@ -136,8 +136,8 @@ if( $simulationid !=0 && $questionid     ==0 )  {
         echo ' or ';
         echo html_writer::link($url_next_question, 'Continue simulation');
     }
-   
-   
+//    Reset variabeles
+    responsim_reset_variables($cm->id);
     echo $OUTPUT->footer();
 }
 else{
@@ -150,6 +150,7 @@ else{
         $currentquestion=  $DB->get_record('responsim_simulation_data',['simulation'=>$simulationid, 'question'=>$questionid]);
     
     //Add a fake block which is displaying some addtional data
+   
     responsim_add_fake_blocks($PAGE,$cm);
 
     // Answer given: navigate to next question o
