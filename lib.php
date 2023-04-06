@@ -506,14 +506,14 @@ function check_for_feedback($questionid,$answerid) {
  * @throws dml_exception
  */
 function responsim_apply_rules($entry,$cmid) {
-    global $DB;
+    global $DB, $USER;
         $rec=$DB->get_records('responsim_laws',['cmid'=>$cmid,'answer'=>$entry]);
         foreach($rec as $r) {
             $idnextquestion=NULL;
             if(!empty($idnextquestion)) {
                 $idnextquestion=$r->next_question;
             }
-            $var=$DB->get_record('responsim_variable_values',['variable'=>$r->variable]);
+            $var=$DB->get_record('responsim_variable_values',['variable'=>$r->variable, 'mdl_user'=>$USER->id]);
             $val=$var->variable_value;
             $valchange=$r->variable_change;
             // $newstr=str_replace('{var}', '',$valchange);
