@@ -75,7 +75,7 @@ class responsim_variable_form_edit extends moodleform {
         }
 
         $variable= $DB->get_record('responsim_variables', ['id' =>$this->_customdata['variableid'] ]);
-        $variable_value= $DB->get_record('responsim_variable_values', ['id' =>$this->_customdata['variableid'] ]);
+        $variable_value= $DB->get_record('responsim_variable_initial', ['variable' =>$this->_customdata['variableid'] ]);
 
         $mform->addElement('static', '', '', "Variablen bearbeiten");
         $attr_var_name=array('size'=>'20');
@@ -83,7 +83,7 @@ class responsim_variable_form_edit extends moodleform {
          $mform->setType('varname', PARAM_TEXT);
          
           $attr_var_value=array('size'=>'20');
-        $mform->addElement('text', 'varvalue', "Variablen-Wert", $attr_var_value)->setValue($variable_value->variable_value);
+        $mform->addElement('text', 'varvalue', "Variablen-Wert", $attr_var_value)->setValue($variable_value->value);
          $mform->setType('varvalue', PARAM_TEXT);
 
          $mform->addElement('hidden', 'valid', $variable_value->id);

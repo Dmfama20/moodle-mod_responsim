@@ -74,9 +74,10 @@ if($data = $mform->get_data()) {
   
   
     $update_params = ['id' => $variableid, 'variable' => $data->varname];
-    $DB->update_record('responsim_variables',$update_params );   
-    $update_params = ['id'=>$data->valid, 'variable' => $variableid, 'variable_value' => $data->varvalue];
-    $DB->update_record('responsim_variable_values',$update_params ); 
+    $DB->update_record('responsim_variables',$update_params );  
+    $value=$DB->get_record('responsim_variable_initial',['variable'=>$variableid]);
+    $update_params = ['id'=>$value->id, 'value' => $data->varvalue];
+    $DB->update_record('responsim_variable_initial',$update_params ); 
     $currentparams = ['id' => $cm->id];
     redirect(new moodle_url('/mod/responsim/variables.php', $currentparams));                     
 }

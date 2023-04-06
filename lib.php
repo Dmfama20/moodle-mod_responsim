@@ -790,7 +790,7 @@ function list_all_variables($cmid,$editable=false) {
         ));
         $data[] = html_writer::link($url, $var->variable);
         // $data[] = html_writer::link($url, format_string($page->title, true), array('id' => 'lesson-' . $page->id));
-        $data[] = $record_value ->variable_value;
+        $data[] = $record_value ->value;
         $delurl = new moodle_url('/mod/responsim/delete_variable.php', array(
             'id'     => $PAGE->cm->id,
             'variableid'=> $var->id
