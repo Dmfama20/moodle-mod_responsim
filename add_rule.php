@@ -110,6 +110,7 @@ if($data = $mform->get_data()) {
     $cir = new csv_import_reader($importid, 'uploadlist');
 
     $filecontent = $mform->get_file_content('csvfile');
+
     if($data->delimiter=='comma')   {
         $readcount = $cir->load_csv_content($filecontent, null, 'comma');
     }
@@ -124,7 +125,6 @@ if($data = $mform->get_data()) {
     }
 
     $headers = $cir->get_columns();
-
     if (!$headers) {
 
         $errors[] = 'Cannot parse submitted CSV file.';
@@ -142,6 +142,7 @@ if($data = $mform->get_data()) {
             $fieldnames[] = $header;
 
         }
+
 
         $iteration = 0;
 

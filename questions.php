@@ -107,7 +107,28 @@ if($data = $mform->get_data()) {
                 foreach($answers as $ans)   {
                     foreach($data->selectvariables as $var)   {
                         $variable=$DB->get_record('responsim_variables',['id'=>$var]);
-                        $bulk_questions[$counter]= array($qu,clean_param($question->name,PARAM_TEXT), clean_param($question->questiontext,PARAM_TEXT),$ans->id,clean_param($ans->answer,PARAM_TEXT), 
+                        $shorttext= substr(clean_param($question->questiontext,PARAM_TEXT),0,30);
+                        // Shorten questiontext and answers
+                        if(strlen(clean_param($question->questiontext,PARAM_TEXT))>30)
+                            {
+                                $shorttext= substr(clean_param($question->questiontext,PARAM_TEXT),0,30);
+                            }
+                        else {
+                          $shorttext= clean_param($question->questiontext,PARAM_TEXT);
+                        }
+                        if(strlen(clean_param($ans->answer,PARAM_TEXT))>30)
+                            {
+                                $shortanswer= substr(clean_param($ans->answer,PARAM_TEXT),0,30);
+                            }
+                        else {
+                          $shortanswer= clean_param($ans->answer,PARAM_TEXT);
+                        }
+
+                           
+                        // remove commas
+                        $shorttext = preg_replace('/[ ,]+/', ' ', trim($shorttext))."....";
+                        $shortanswer = preg_replace('/[ ,]+/', ' ', trim($shortanswer))."....";
+                        $bulk_questions[$counter]= array($qu,clean_param($question->name,PARAM_TEXT), $shorttext,$ans->id,$shortanswer, 
                         $var,$variable->variable);
                         $counter++;
 
